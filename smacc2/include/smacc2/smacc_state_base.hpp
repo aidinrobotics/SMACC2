@@ -76,7 +76,7 @@ public:
     logger_.reset(new rclcpp::Logger(
       rclcpp::get_logger(smacc2::utils::cleanShortTypeName(typeid(MostDerived)))));
 
-    RCLCPP_INFO(getLogger(), "[%s] Creating state ", STATE_NAME);
+    RCLCPP_DEBUG(getLogger(), "[%s] Creating state ", STATE_NAME);
     this->set_context(ctx.pContext_);
 
     node_ = this->getStateMachine().getNode();
@@ -448,7 +448,7 @@ private:
 
       for (auto & ortho : this->getStateMachine().getOrthogonals())
       {
-        RCLCPP_INFO(
+        RCLCPP_DEBUG(
           getLogger(), "[%s] Initializing orthogonal: %s", STATE_NAME,
           demangleSymbol(typeid(*ortho.second).name()).c_str());
         ortho.second->initState(this);

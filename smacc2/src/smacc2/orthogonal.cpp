@@ -72,7 +72,7 @@ void ISmaccOrthogonal::onInitialize() {}
 
 void ISmaccOrthogonal::initState(ISmaccState * state)
 {
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     getLogger(), "[Orthogonal: %s] InitState: %s.", this->getName().c_str(),
     state->getClassName().c_str());
   clientBehaviors_.push_back(std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>());
@@ -102,7 +102,7 @@ void ISmaccOrthogonal::onEntry()
   {
     for (auto & clBehavior : clientBehaviors_.back())
     {
-      RCLCPP_INFO(
+      RCLCPP_DEBUG(
         getLogger(), "[Orthogonal: %s] OnEntry, current Behavior: %s", orthogonalName, cbName);
 
       try
@@ -124,7 +124,7 @@ void ISmaccOrthogonal::onEntry()
   }
   else
   {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(), "[Orthogonal: %s] OnEntry -> empty orthogonal (no client behavior).",
       orthogonalName);
   }
@@ -138,7 +138,7 @@ void ISmaccOrthogonal::onExit()
   {
     for (auto & clBehavior : clientBehaviors_.back())
     {
-      RCLCPP_INFO(
+      RCLCPP_DEBUG(
         getLogger(), "[Orthogonal: %s] OnExit, current Behavior: %s", orthogonalName, cbName);
       try
       {
@@ -158,7 +158,7 @@ void ISmaccOrthogonal::onExit()
   }
   else
   {
-    RCLCPP_INFO(getLogger(), "[Orthogonal %s] OnExit().", orthogonalName);
+    RCLCPP_DEBUG(getLogger(), "[Orthogonal %s] OnExit().", orthogonalName);
   }
 }
 

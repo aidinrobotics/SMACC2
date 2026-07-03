@@ -111,7 +111,7 @@ void ISmaccStateMachine::updateStatusMessage()
 
   if (currentStateInfo_ != nullptr)
   {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_DEBUG_STREAM(
       nh_->get_logger(),
       "[StateMachine] Setting state active: " << currentStateInfo_->getFullPath());
 
@@ -163,7 +163,7 @@ void ISmaccStateMachine::onInitialized()
 
 void ISmaccStateMachine::initializeROS(std::string shortname)
 {
-  RCLCPP_WARN_STREAM(nh_->get_logger(), "State machine base creation: " << shortname);
+  RCLCPP_DEBUG_STREAM(nh_->get_logger(), "State machine base creation: " << shortname);
   // STATE MACHINE TOPICS
   stateMachinePub_ = nh_->create_publisher<smacc2_msgs::msg::SmaccStateMachine>(
     shortname + "/smacc/state_machine_description", rclcpp::QoS(1));

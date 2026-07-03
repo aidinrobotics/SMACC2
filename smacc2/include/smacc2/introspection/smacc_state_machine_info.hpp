@@ -160,7 +160,7 @@ template <typename T>
 typename enable_if<boost::mpl::is_sequence<T>>::type processTransitions(
   std::shared_ptr<SmaccStateInfo> & sourceState)
 {
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     globalNh_->get_logger(), "State %s Walker has transition list",
     sourceState->fullStateName.c_str());
   using boost::mpl::_1;
@@ -184,7 +184,7 @@ void processTransition(
   smacc2::Transition<Ev, Dst, Tag> * t, std::shared_ptr<SmaccStateInfo> & sourceState)
 {
   auto transitionTypeInfo = TypeInfo::getTypeInfoFromType<smacc2::Transition<Ev, Dst, Tag>>();
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     globalNh_->get_logger(), "State %s Walker transition: %s", sourceState->toShortName().c_str(),
     demangleSymbol(typeid(Ev).name()).c_str());
   processTransitionAux(t, sourceState, false, transitionTypeInfo);
@@ -195,7 +195,7 @@ void processTransitionAux(
   smacc2::Transition<Ev, Dst, Tag> *, std::shared_ptr<SmaccStateInfo> & sourceState, bool history,
   TypeInfo::Ptr & transitionTypeInfo)
 {
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     globalNh_->get_logger(), "State %s Walker transition: %s", sourceState->toShortName().c_str(),
     demangleSymbol(typeid(Ev).name()).c_str());
   std::string transitionTag;
@@ -214,7 +214,7 @@ void processTransitionAux(
     automaticTransitionType<Ev>(transitionType);
   }
 
-  RCLCPP_INFO_STREAM(globalNh_->get_logger(), "Transition tag: " << transitionTag);
+  RCLCPP_DEBUG_STREAM(globalNh_->get_logger(), "Transition tag: " << transitionTag);
 
   if (!sourceState->stateMachine_->containsState<Dst>())
   {
@@ -348,7 +348,7 @@ template <typename T>
 typename std::enable_if<HasOnDefinition<T>::value, void>::type CallOnDefinition()
 {
   /* something when T has toString ... */
-  RCLCPP_INFO_STREAM(
+  RCLCPP_DEBUG_STREAM(
     globalNh_->get_logger(), "EXECUTING ONDEFINITION: " << demangleSymbol(typeid(T).name()));
   T::staticConfigure();
 }
@@ -478,7 +478,7 @@ std::shared_ptr<SmaccStateInfo> SmaccStateMachineInfo::createState(
   auto * statetid = &(typeid(StateType));
 
   auto demangledName = demangledTypeName<StateType>();
-  RCLCPP_INFO_STREAM(getLogger(), "Creating State Info: " << demangledName);
+  RCLCPP_DEBUG_STREAM(getLogger(), "Creating State Info: " << demangledName);
 
   auto state = std::make_shared<SmaccStateInfo>(statetid, parent, thisptr);
   state->demangledStateName = demangledName;
@@ -508,7 +508,7 @@ std::shared_ptr<SmaccStateInfo> SmaccStateInfo::createChildState()
 
   auto childState = this->stateMachine_->createState<StateType>(realparentState);
 
-  RCLCPP_WARN_STREAM(
+  RCLCPP_DEBUG_STREAM(
     getLogger(), "Real parent state> " << demangleSymbol<typename StateType::TContext>());
 
   /*auto contextInfo = TypeInfo::getTypeInfoFromType<InitialStateType>();

@@ -359,7 +359,7 @@ void SignalDetector::pollingLoop()
 
   if (!nh->get_parameter("signal_detector_loop_freq", this->loop_rate_hz))
   {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       getLogger(),
       "Signal Detector frequency (ros param signal_detector_loop_freq) was not set, using default "
       "frequency: "
@@ -368,23 +368,23 @@ void SignalDetector::pollingLoop()
   }
   else
   {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       getLogger(), "Signal Detector frequency (ros param signal_detector_loop_freq): %lf",
       this->loop_rate_hz);
   }
 
   nh->set_parameter(rclcpp::Parameter("signal_detector_loop_freq", this->loop_rate_hz));
 
-  RCLCPP_INFO_STREAM(getLogger(), "[SignalDetector] Loop rate hz:" << loop_rate_hz);
+  RCLCPP_DEBUG_STREAM(getLogger(), "[SignalDetector] Loop rate hz:" << loop_rate_hz);
 
   if (this->executionModel_ == ExecutionModel::SINGLE_THREAD_SPINNER)
   {
-    RCLCPP_INFO_STREAM(getLogger(), "[SignalDetector] Running in single-threaded mode.");
+    RCLCPP_DEBUG_STREAM(getLogger(), "[SignalDetector] Running in single-threaded mode.");
 
     rclcpp::Rate r(loop_rate_hz);
     while (rclcpp::ok() && !end_)
     {
-      RCLCPP_INFO_STREAM_THROTTLE(
+      RCLCPP_DEBUG_STREAM_THROTTLE(
         getLogger(), *getNode()->get_clock(), 10000, "[SignalDetector] Heartbeat");
       pollOnce();
       rclcpp::spin_some(nh);

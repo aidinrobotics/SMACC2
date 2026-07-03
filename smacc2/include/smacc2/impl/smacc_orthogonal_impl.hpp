@@ -178,7 +178,7 @@ public:
     //     return nullptr;
     // }
 
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(), "[%s] Creating client object, type:'%s' object tag: '%s'",
       demangleType(typeid(*this)).c_str(), demangledTypeName<TClient>().c_str(),
       demangledTypeName<TOrthogonal>().c_str());

@@ -37,7 +37,7 @@ template <typename TOrthogonal, typename TBehavior, typename... Args>
 std::shared_ptr<TBehavior> ISmaccState::configure(Args &&... args)
 {
   std::string orthogonalkey = demangledTypeName<TOrthogonal>();
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     getLogger(), "[%s] Configuring orthogonal: %s", THIS_STATE_NAME, orthogonalkey.c_str());
 
   TOrthogonal * orthogonal = this->getOrthogonal<TOrthogonal>();
