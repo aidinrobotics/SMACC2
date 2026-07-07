@@ -22,7 +22,7 @@
 
 #ifdef TRACETOOLS_LTTNG_ENABLED
 #include <smacc2/smacc_tracing/trace_provider.hpp>
-#define CONDITIONAL_TP(...) tracepoint(TRACETOOLS_TRACEPOINT_PROVIDER, __VA_ARGS__)
+#define CONDITIONAL_TP(...) tracepoint(TRACEPOINT_PROVIDER, __VA_ARGS__)
 #else
 #define CONDITIONAL_TP(...)
 #endif

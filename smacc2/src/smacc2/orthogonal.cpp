@@ -107,7 +107,7 @@ void ISmaccOrthogonal::onEntry()
 
       try
       {
-        TRACETOOLS_TRACEPOINT(
+        TRACEPOINT(
           smacc2_client_behavior_on_entry_start, statename, orthogonalName, cbName);
         clBehavior->executeOnEntry();
       }
@@ -120,7 +120,7 @@ void ISmaccOrthogonal::onEntry()
           "%s",
           cbName, e.what());
       }
-      TRACETOOLS_TRACEPOINT(smacc2_client_behavior_on_entry_end, statename, orthogonalName, cbName);
+      TRACEPOINT(smacc2_client_behavior_on_entry_end, statename, orthogonalName, cbName);
     }
   }
   else
@@ -143,7 +143,7 @@ void ISmaccOrthogonal::onExit()
         getLogger(), "[Orthogonal: %s] OnExit, current Behavior: %s", orthogonalName, cbName);
       try
       {
-        TRACETOOLS_TRACEPOINT(
+        TRACEPOINT(
           smacc2_client_behavior_on_exit_start, statename, orthogonalName, cbName);
         clBehavior->executeOnExit();
       }
@@ -155,7 +155,7 @@ void ISmaccOrthogonal::onExit()
           "info: %s",
           cbName, e.what());
       }
-      TRACETOOLS_TRACEPOINT(smacc2_client_behavior_on_exit_end, statename, orthogonalName, cbName);
+      TRACEPOINT(smacc2_client_behavior_on_exit_end, statename, orthogonalName, cbName);
     }
   }
   else
