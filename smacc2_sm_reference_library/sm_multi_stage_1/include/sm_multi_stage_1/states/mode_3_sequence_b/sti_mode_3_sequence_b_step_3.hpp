@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ struct StiMode3SequenceBStep3 : smacc2::SmaccState<StiMode3SequenceBStep3, SsMod
   // TRANSITION TABLE
   typedef mpl::list<
 
-    Transition<EvKeyPressP<CbDefaultKeyboardBehavior, OrKeyboard>, StiMode3SequenceBStep4, SUCCESS>,
     Transition<EvTimer<CbTimerCountdownOnce, OrTimer>, StiMode3SequenceBStep5, SUCCESS>,
     Transition<EvKeyPressN<CbDefaultKeyboardBehavior, OrKeyboard>, StiMode3SequenceBStep6, SUCCESS>
 
@@ -42,8 +41,8 @@ struct StiMode3SequenceBStep3 : smacc2::SmaccState<StiMode3SequenceBStep3, SsMod
   // STATE FUNCTIONS
   static void staticConfigure()
   {
-    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(20);
-    configure_orthogonal<OrSubscriber, CbWatchdogSubscriberBehavior>();
+    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(2s);
+    
     
     configure_orthogonal<OrKeyboard, CbDefaultKeyboardBehavior>();
   }

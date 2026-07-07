@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -119,7 +119,6 @@ struct SmaccStateReactorInfo
   std::shared_ptr<SmaccStateInfo> ownerState;
   std::function<void(smacc2::ISmaccState *)> factoryFunction;
 
-  //const std::type_info *stateReactorType;
   std::shared_ptr<TypeInfo> stateReactorType;
   std::shared_ptr<TypeInfo> outputEventType;
   std::shared_ptr<TypeInfo> objectTagType;
@@ -153,7 +152,6 @@ struct SmaccEventGeneratorInfo
   std::shared_ptr<SmaccStateInfo> ownerState;
   std::function<void(smacc2::ISmaccState *)> factoryFunction;
 
-  // const std::type_info *eventGeneratorType;
   std::shared_ptr<TypeInfo> eventGeneratorType;
   std::shared_ptr<TypeInfo> outputEventType;
   std::shared_ptr<TypeInfo> objectTagType;
@@ -210,9 +208,6 @@ public:
   void declareTransition(
     std::shared_ptr<SmaccStateInfo> & dstState, std::string transitionTag,
     std::string transitionType, bool history, TypeInfo::Ptr transitionTypeInfo);
-
-  // template <typename EvSource, template <typename> typename EvType>
-  // void declareTransition(std::shared_ptr<SmaccStateInfo> &dstState, std::string transitionTag, std::string transitionType, bool history);
 
   const std::string & toShortName() const;
 

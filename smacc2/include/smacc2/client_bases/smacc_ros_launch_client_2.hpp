@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ namespace client_bases
 {
 struct ProcessInfo
 {
-  pid_t pid;    // PID del proceso hijo
-  FILE * pipe;  // Pipe para la salida del proceso hijo
+  pid_t pid;    // PID of the child process
+  FILE * pipe;  // Pipe for the child process output
 };
 
 ProcessInfo runProcess(const char * command);
@@ -67,7 +67,6 @@ public:
   pid_t launchPid_;
 
 protected:
-  // std::future<std::string> result_;
   std::future<std::string> result_;
 
   typedef std::function<void> cancelCallback;

@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 
 #include <std_msgs/msg/u_int16.hpp>
 
-namespace cl_keyboard::components
+namespace cl_keyboard
 {
 //----------------- KEYBOARD EVENT DEFINITIONS ----------------------------------------------
 template <typename TSource, typename TOrthogonal>
@@ -158,7 +158,8 @@ struct EvKeyPressZ : sc::event<EvKeyPressZ<TSource, TOrthogonal>>
 };
 
 //------------------  KEYBOARD LISTENER COMPONENT ---------------------------------------------
-
+namespace components
+{
 class CpKeyboardListener1 : public smacc2::ISmaccComponent
 {
 public:
@@ -266,4 +267,5 @@ public:
 private:
   std::function<void(std_msgs::msg::UInt16)> postEventKeyPress;
 };
-}  // namespace cl_keyboard::components
+}  // namespace components
+}  // namespace cl_keyboard

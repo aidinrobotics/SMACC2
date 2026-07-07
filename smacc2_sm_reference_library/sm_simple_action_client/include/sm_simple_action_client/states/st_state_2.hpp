@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ struct StState2 : smacc2::SmaccState<StState2, SmSimpleActionClient>
     //TRANSITION TABLE
     typedef mpl::list<
     smacc2::Transition<EvManualMode<ClModeSelect, OrModeSelect>, StState1, MANUAL_MODE>,
-    smacc2::Transition<smacc2::EvCbSuccess<CbFibonacci, OrFibonacci>, StState2>,
+    smacc2::Transition<smacc2::EvCbSuccess<CbFibonacci, OrFibonacci>, StState3>,
     smacc2::Transition<smacc2::EvCbFailure<CbFibonacci, OrFibonacci>, StState2>
     > reactions;
 
@@ -49,7 +49,16 @@ struct StState2 : smacc2::SmaccState<StState2, SmSimpleActionClient>
     }
 
     void onEntry()
-    {   
+    {
+      RCLCPP_INFO(getLogger(), " ");
+      RCLCPP_INFO(getLogger(), "╔════════════════════════════════════════════════════════════════╗");
+      RCLCPP_INFO(getLogger(), "║     ENTERING StState2 - EXECUTING FIBONACCI ACTION             ║");
+      RCLCPP_INFO(getLogger(), "║                                                                ║");
+      RCLCPP_INFO(getLogger(), "║  Sending Fibonacci(order=10) goal to action server...          ║");
+      RCLCPP_INFO(getLogger(), "║  On success → transition to StState3                           ║");
+      RCLCPP_INFO(getLogger(), "║  On failure → stay in StState2                                 ║");
+      RCLCPP_INFO(getLogger(), "╚════════════════════════════════════════════════════════════════╝");
+      RCLCPP_INFO(getLogger(), " ");
     }
 };
 

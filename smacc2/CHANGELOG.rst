@@ -1,6 +1,60 @@
 Changelog for package smacc2
 ================================
 
+3.1.0 (2026-05-31)
+-------------------
+### Fixed
+- **Spelling: ``notifyOnStateExiting``** — corrected double-t typo
+  (``notifyOnStateExitting``) in declaration (``smacc_state_machine.hpp``),
+  definition (``smacc_state_machine_impl.hpp``), and call site
+  (``smacc_state_base.hpp``).
+- **Duplicate includes removed** from ``smacc_state_machine_impl.hpp`` — seven
+  headers that were listed twice (no-op under ``#pragma once``, but confusing).
+- **Dead commented-out include removed** from ``smacc_state_machine.hpp`` —
+  ``smacc_event_generator.hpp`` was already included via the impl header.
+
+### Changed
+- **cl_ros2_timer duration-based API** (`#61 <https://github.com/robosoft-ai/SMACC2/issues/61>`_)
+
+  ``CbTimerCountdownOnce`` and ``CbTimerCountdownLoop`` now use dedicated
+  ``rclcpp::WallTimer`` instances with exact ``rclcpp::Duration`` arguments
+  (C++ chrono literals). All 22 ``or_timer.hpp`` files across the reference
+  library updated accordingly.
+
+### Removed
+- ``CbRos2Timer`` client behavior (unused).
+- ``CpTimerListener1`` component (orphaned after tick-stack removal).
+
+### Contributors
+- Brett Aldrich
+
+3.0.1 (2025-01-16)
+-------------------
+### Added
+- **ROS2 Jazzy Support**: Official support for ROS2 Jazzy Jalisco
+
+  SMACC2 now defaults to ROS2 Jazzy (Ubuntu 24.04 Noble) as the primary development branch.
+  This marks the transition to the latest LTS ROS2 distribution with improved performance
+  and new features.
+
+### Fixed
+- **CI Format Pipeline**: Fixed PEP 668 externally-managed-environment errors in GitHub Actions
+
+  Updated CI workflow and documentation to use apt-installed `pre-commit` and `clang-format`
+  instead of pip, ensuring compatibility with Ubuntu 24.04's PEP 668 Python packaging
+  restrictions. This provides a more robust and future-proof CI/CD pipeline.
+
+  - Updated `.github/workflows/ci-format.yml` to install pre-commit via apt
+  - Updated `CONTRIBUTING.md` with correct installation instructions
+  - Updated `README.md` to include development tools in setup instructions
+
+### Documentation
+- Enhanced developer documentation for Ubuntu 24.04+ environments
+- Added comprehensive PEP 668 compliance documentation
+
+### Contributors
+- Brett Aldrich (@brettpac)
+
 2.3.20 (2025-11-01)
 -------------------
 ### Fixed

@@ -1,8 +1,12 @@
+<h2>State Machine Diagram</h2>
+ 
+![sm_panda_cl_moveit2z_cb_inventory](docs/SmPandaClMoveit2zCbInventory_2025-12-21_231551.svg)
+ 
  <h2>Build Instructions</h2>
 
 First, source your ros2 installation.
 ```
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 ```
 
 Before you build, make sure you've installed all the dependencies...
@@ -21,13 +25,13 @@ colcon build
 Then source the proper workspace...
 
 ```
-source ~/workspace/humble_ws/install/setup.sh
+source install/setup.bash
 ```
 
 And then run the launch file...
 
 ```
-ros2 launch sm_panda_cl_moveit2z_cb_inventory sm_panda_cl_moveit2z_cb_inventory.launch.py
+ros2 launch sm_panda_cl_moveit2z_cb_inventory sm_panda_cl_moveit2z_cb_inventory.py
 ```
 
 

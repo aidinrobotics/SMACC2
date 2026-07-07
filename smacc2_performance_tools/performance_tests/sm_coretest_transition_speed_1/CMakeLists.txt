@@ -18,7 +18,7 @@ find_package(Boost COMPONENTS thread REQUIRED)
 include_directories(
   include
   ${smacc2_INCLUDE_DIRS}
-  ${ros_timer_client_INCLUDE_DIRS}
+  ${cl_ros2_timer_INCLUDE_DIRS}
 )
 
 add_executable(${PROJECT_NAME}_node
@@ -27,7 +27,7 @@ add_executable(${PROJECT_NAME}_node
 
 target_link_libraries(${PROJECT_NAME}_node
   ${smacc2_LIBRARIES}
-  ${ros_timer_client_LIBRARIES}
+  ${cl_ros2_timer_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 

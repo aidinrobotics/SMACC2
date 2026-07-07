@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 namespace sm_atomic_lifecycle
 {
 using sm_atomic_lifecycle::OrLifecycleNode;
-using namespace cl_lifecyclenode;
+using namespace cl_lifecycle_node;
 
 // STATE DECLARATION
 struct StInactive : smacc2::SmaccState<StInactive, SmAtomicLifecycle>
@@ -32,15 +32,16 @@ struct StInactive : smacc2::SmaccState<StInactive, SmAtomicLifecycle>
 
   // TRANSITION TABLE
   typedef mpl::list<
-        Transition<EvTransitionCleanup<ClLifecycleNode, OrLifecycleNode>, StCleaningUp, SUCCESS>,
-        Transition<EvTransitionInactiveShutdown<ClLifecycleNode, OrLifecycleNode>, StShuttingDown, SUCCESS>,
-        Transition<EvTransitionActivate<ClLifecycleNode, OrLifecycleNode>, StActivating, SUCCESS>
+        Transition<EvTransitionCleanup<CpLifecycleEventMonitor, OrLifecycleNode>, StCleaningUp, SUCCESS>,
+        Transition<EvTransitionInactiveShutdown<CpLifecycleEventMonitor, OrLifecycleNode>, StShuttingDown, SUCCESS>,
+        Transition<EvTransitionActivate<CpLifecycleEventMonitor, OrLifecycleNode>, StActivating, SUCCESS>
       >
       reactions;
 
   // STATE FUNCTIONS
   static void staticConfigure()
   {
+    configure_orthogonal<OrLifecycleNode, CbActivate>();
   }
 
   void runtimeConfigure()

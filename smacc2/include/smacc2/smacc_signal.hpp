@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #pragma once
 
 #include <boost/any.hpp>
+#include <boost/signals2/connection.hpp>
 #include <boost/signals2/signal.hpp>
 
 namespace smacc2
@@ -28,6 +29,8 @@ namespace smacc2
 using namespace boost;
 using namespace boost::signals2;
 using namespace boost::signals2::detail;
+
+typedef boost::signals2::connection SmaccSignalConnection;
 
 template <
   typename Signature,

@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ struct StiMode4SequenceCStep1 : smacc2::SmaccState<StiMode4SequenceCStep1, SsMod
 
     Transition<EvTimer<CbTimerCountdownOnce, OrTimer>, StiMode4SequenceCStep2, TIMEOUT>,
     Transition<EvKeyPressN<CbDefaultKeyboardBehavior, OrKeyboard>, StiMode4SequenceCStep2, NEXT>
-    //Transition<EvKeyPressP<CbDefaultKeyboardBehavior, OrKeyboard>, StiMode4SequenceCLoop2, PREVIOUS>,
 
     //Transition<EvKeyPressZ<CbDefaultKeyboardBehavior, OrKeyboard>, Mode2StObserve, RETURN>,
     //Transition<EvKeyPressX<CbDefaultKeyboardBehavior, OrKeyboard>, MsRecovery2, ABORT>
@@ -42,8 +41,8 @@ struct StiMode4SequenceCStep1 : smacc2::SmaccState<StiMode4SequenceCStep1, SsMod
   // STATE FUNCTIONS
   static void staticConfigure()
   {
-    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(20);
-    configure_orthogonal<OrSubscriber, CbWatchdogSubscriberBehavior>();
+    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(2s);
+    
     
     configure_orthogonal<OrKeyboard, CbDefaultKeyboardBehavior>();
   }

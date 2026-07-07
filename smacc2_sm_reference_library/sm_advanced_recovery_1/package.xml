@@ -2,14 +2,14 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>sm_advanced_recovery_1</name>
-  <version>2.3.20</version>
+  <version>3.1.0</version>
   <description>The sm_advanced_recovery_1 package</description>
-  <maintainer email="pablo@ibrobotics.com">geus</maintainer>
+  <maintainer email="brett@robosoft.ai">Brett Aldrich</maintainer>
   <license>Apache-2.0</license>
 
   <depend>smacc2</depend>
   <depend>rclcpp</depend>
-  <depend>multirole_sensor_client</depend>
+  <depend>cl_generic_sensor</depend>
   <depend>sr_all_events_go</depend>
   <depend>std_msgs</depend>
 

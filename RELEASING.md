@@ -1,541 +1,401 @@
+# Package Release Summary
+
+Rosdistro reviewers will only reliably approve packages with `smacc2` in the name.
+All other packages are excluded from the apt release regardless of merit.
+
+| Category | Packages | apt Release |
+|----------|----------|:-----------:|
+| Core framework | `smacc2`, `smacc2_msgs` | ✅ |
+| Core libraries | `sr_*`, `eg_*` | ❌ |
+| Clients | `cl_keyboard`, `cl_ros2_timer`, `cl_lifecycle_node` | ❌ |
+| Reference state machines | `sm_atomic`, `sm_atomic_mode_states`, etc. | ❌ |
+| Everything else | all remaining packages | ❌ |
+
+---
+
+# Package Release List
+
+This table is the authoritative list of which packages are included in each apt release.
+Update it here before running bloom. Packages marked ❌ are removed from the rosdistro
+PR after bloom runs (see Phase 5: Post-Bloom Package Filtering).
+
+| Package | Category | apt Release | Reason |
+|---------|----------|:-----------:|--------|
+| `smacc2` | Core | ✅ | Core framework |
+| `smacc2_msgs` | Core | ✅ | Core messages |
+| `sr_all_events_go` | State Reactor | ❌ | Name lacks `smacc2` prefix |
+| `sr_conditional` | State Reactor | ❌ | Name lacks `smacc2` prefix |
+| `sr_event_countdown` | State Reactor | ❌ | Name lacks `smacc2` prefix |
+| `eg_conditional_generator` | Event Generator | ❌ | Name lacks `smacc2` prefix |
+| `eg_random_generator` | Event Generator | ❌ | Name lacks `smacc2` prefix |
+| `cl_keyboard` | Client | ❌ | Name lacks `smacc2` prefix |
+| `cl_ros2_timer` | Client | ❌ | Name lacks `smacc2` prefix |
+| `cl_lifecycle_node` | Client | ❌ | Name lacks `smacc2` prefix |
+| `cl_http` | Client | ❌ | Not in current release scope |
+| `cl_nav2z` | Client | ❌ | Not in current release scope |
+| `backward_global_planner` | Nav Planner | ❌ | Not in current release scope |
+| `backward_local_planner` | Nav Planner | ❌ | Not in current release scope |
+| `forward_global_planner` | Nav Planner | ❌ | Not in current release scope |
+| `forward_local_planner` | Nav Planner | ❌ | Not in current release scope |
+| `nav2z_planners_common` | Nav Planner | ❌ | Not in current release scope |
+| `pure_spinning_local_planner` | Nav Planner | ❌ | Not in current release scope |
+| `undo_path_global_planner` | Nav Planner | ❌ | Not in current release scope |
+| `cl_generic_sensor` | Client | ❌ | Not in current release scope |
+| `cl_moveit2z` | Client | ❌ | Not in current release scope |
+| `cl_mission_tracker` | Client | ❌ | Too specialized |
+| `cl_foundation_pose` | Client | ❌ | Isaac-specific |
+| `cl_isaac_apriltag` | Client | ❌ | Isaac-specific |
+| `cl_gcalcli` | Client | ❌ | Google Calendar — too specialized |
+| `cl_px4_mr` | Client | ❌ | PX4 drone hardware |
+| `cl_modbus_tcp_relay` | Client | ❌ | Modbus hardware |
+| `sm_atomic` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_atomic_mode_states` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_data_sharing_1` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_data_sharing_2` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_three_some` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_simple_action_client` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_cl_keyboard_unit_test_1` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_cl_ros2_timer_unit_test_1` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_mode_state_behavior_1` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_retry_logic_1` | Reference SM | ❌ | Name lacks `smacc2` prefix |
+| `sm_coretest_transition_speed_1` | Perf Tool | ❌ | Name lacks `smacc2` prefix |
+| `sm_atomic_http` | Reference SM | ❌ | Not in current release scope |
+| `sm_atomic_lifecycle` | Reference SM | ❌ | Not in current release scope |
+| `sm_branching` | Reference SM | ❌ | Not in current release scope |
+| `sm_multi_stage_1` | Reference SM | ❌ | Not in current release scope |
+| `sm_multithread_test_1` | Reference SM | ❌ | Not in current release scope |
+| `sm_advanced_recovery_1` | Reference SM | ❌ | Not in current release scope |
+| `sm_pack_ml` | Reference SM | ❌ | Needs rehaul before releasing |
+| `sm_cl_gcalcli_test_1` | Test SM | ❌ | Requires Google Calendar |
+| `sm_cl_px4_mr_test_1` | Test SM | ❌ | Requires PX4 drone |
+| `sm_cl_px4_mr_test_2` | Test SM | ❌ | Requires PX4 drone |
+| `sm_modbus_tcp_relay_test_1` | Test SM | ❌ | Requires Modbus hardware |
+| `sm_nav2_gazebo_test_1` | Test SM | ❌ | Requires Gazebo + Nav2 hardware |
+| `sm_panda_cl_moveit2z_cb_inventory` | Test SM | ❌ | Requires Panda arm |
+| `sm_panda_cl_moveit2z_cb_inventory_isaacsim` | Test SM | ❌ | Requires Isaac Sim |
+| `sm_atomic_performance_trace_1` | Perf Tool | ❌ | Internal testing only |
+| `sm_atomic_subscribers_performance_test` | Perf Tool | ❌ | Internal testing only |
+
+> **New packages:** When bloom adds a new package to the rosdistro PR, add a row here
+> before merging. Default to ❌ until reviewed.
+
+---
+
 # SMACC2 Release Process
 
-This document details the process for creating a new SMACC2 release for ROS2 apt packages. The workflow involves Claude Code generating commands in a Docker container, while the human developer executes them on the host system due to GitHub authentication requirements.
-
-## Workflow Overview
-
 **Division of Labor:**
-- **Claude Code (Docker)**: Analyzes code, prepares files, generates commands, creates documentation
-- **Human Developer (Host)**: Executes git commands, handles GitHub authentication, runs bloom-release, creates PRs
+- **Claude**: Analyzes code, bumps versions, generates CHANGELOG, runs `filter_rosdistro.py`, drafts PR descriptions and release notes
+- **Human**: Executes git commands on host, runs bloom-release, creates GitHub PR, publishes release
 
-**Why This Split?**
-- Docker container lacks GitHub credentials for push/PR operations
-- Host system has configured git identity and GitHub access tokens
-- Bloom requires rosdep and GitHub API access from host environment
+> **Shell note:** All git commands in this document are written as single lines.
+> Do not split them across lines with backslash continuation — a stray leading space
+> turns into an invalid refspec (e.g. `fatal: invalid refspec ' debian/...'`).
 
 ## Prerequisites (Host System)
 
-### Required Tools
-
 ```bash
-# Install bloom via pip (apt version may be outdated/unavailable)
+# Install bloom (apt version is often outdated)
 pip3 install --user bloom
-
-# Add to PATH (add to ~/.bashrc for persistence)
 export PATH="$HOME/.local/bin:$PATH"
 
-# Verify installation
-which bloom-release  # Should show ~/.local/bin/bloom-release
+# Verify
+which bloom-release
+gh auth status
 ```
 
-### Git Configuration
-
-```bash
-# Configure git identity (if not already set)
-git config user.email "your-email@example.com"
-git config user.name "Your Name"
-
-# Verify GitHub authentication
-ssh -T git@github.com  # OR
-gh auth status         # If using GitHub CLI
-```
-
-### Required Forks
-
-1. Fork `ros/rosdistro` to your GitHub account
-2. Ensure write access to `robosoft-ai/SMACC2` (maintainers only)
-3. Ensure write access to `robosoft-ai/SMACC2-release` (maintainers only)
+Required repo access: `robosoft-ai/SMACC2`, `robosoft-ai/SMACC2-release`, fork of `ros/rosdistro`.
 
 ## Release Phases
 
-### Phase 1: Pre-Release Verification (Claude in Docker)
+### Phase 1: Pre-Release Verification (Claude)
 
 Claude will:
-1. Verify the bug fix or feature exists in source code
-2. Review commit history since last release
-3. Determine appropriate version number (major.minor.patch)
-4. Analyze changes to categorize (fixes, features, breaking changes)
+1. Verify the fix/feature exists in source
+2. Review commits since last release
+3. Determine version number (see Version Numbering below)
+4. Categorize changes (fixes, features, breaking changes)
 
-**Example:**
-```bash
-# Claude runs these internally:
-git log 2.3.19..HEAD --oneline
-git diff 2.3.19..HEAD -- "*.hpp" "*.cpp"
-```
-
-### Phase 2: Version & Documentation Updates (Claude in Docker)
+### Phase 2: Version & Documentation Updates (Claude)
 
 Claude will:
-1. Update all package.xml files (42+ packages) to new version
-2. Generate comprehensive CHANGELOG.rst entry
+1. Update all `package.xml` files to new version
+2. Generate CHANGELOG.rst entry
 3. Prepare commit message
 
-**Human verifies and reviews changes before committing**
-
-### Phase 3: Commit, Tag, and Push (Human on Host)
-
-**Commands generated by Claude, executed by human:**
+### Phase 3: Commit, Tag, and Push (Human)
 
 ```bash
-# Navigate to SMACC2 repository
-cd /path/to/SMACC2
-
-# Stage all version changes
 git add -A
-
-# Commit (Claude provides the commit message)
-git commit -m "Prepare release X.Y.Z
-
-[Claude-generated detailed commit message]
-
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
-
-# Create annotated release tag
-git tag -a X.Y.Z -m "Release X.Y.Z - [Primary fix/feature]"
-
-# Verify tag includes critical commits
-git log X.Y.Z --oneline | grep "critical-commit-hash"
-
-# Push to feature branch first (for PR workflow)
+git commit -m "Prepare release X.Y.Z"
+git tag -a X.Y.Z -m "Release X.Y.Z - [summary]"
 git push origin your-branch-name
 git push origin X.Y.Z
-
-# Create PR to humble branch on GitHub
-# Review and merge PR
+# Open PR to jazzy branch, merge it
 ```
 
-**Important:** After PR is merged, ensure the tag X.Y.Z is on the humble branch. You may need to re-create the tag after merge if it was on a feature branch.
+**After merge:** Verify the tag is on the jazzy branch. If it landed on a feature branch, re-create it:
+```bash
+git checkout jazzy && git pull origin jazzy
+git tag -d X.Y.Z && git push origin :refs/tags/X.Y.Z
+git tag -a X.Y.Z -m "Release X.Y.Z - [summary]"
+git push origin X.Y.Z
+```
 
-### Phase 4: Bloom Release Process (Human on Host)
-
-**Fix Common Issues First:**
+### Phase 4: Bloom Release (Human)
 
 ```bash
-# Fix rosdep configuration (if needed)
-# Check for broken rosdep sources
+# Fix rosdep if needed
+sudo mv /etc/ros/rosdep/sources.list.d/10-debian.list /etc/ros/rosdep/sources.list.d/10-debian.list.disabled
 rosdep update
 
-# If you see errors about missing local files:
-sudo mv /etc/ros/rosdep/sources.list.d/10-debian.list \
-        /etc/ros/rosdep/sources.list.d/10-debian.list.disabled
+# Add px4_msgs rosdep override BEFORE running bloom.
+# cl_px4_mr depends on px4_msgs which is not in Ubuntu Noble repos. Without this override,
+# the bloom rosdebian generator skips entirely, leaving all rolling branches at the old version
+# and creating no snapshot branches — the silent failure that broke the 3.1.0-2 release.
+cat > /tmp/local-rosdep.yaml << 'EOF'
+px4_msgs:
+  ubuntu:
+    noble: [ros-jazzy-px4-msgs]
+EOF
+echo "yaml file:///tmp/local-rosdep.yaml" | sudo tee /etc/ros/rosdep/sources.list.d/99-local.list
+rosdep update
 
-# Verify rosdep works
-rosdep update  # Should complete without fatal errors
-```
-
-**Run Bloom Release:**
-
-```bash
-# Clone or navigate to release repository
-cd /tmp
-git clone https://github.com/robosoft-ai/SMACC2-release.git
-cd SMACC2-release
-
-# CRITICAL: Update tracks.yaml if needed
-# If bloom previously failed or used wrong version:
+# If bloom picks up the wrong version, fix tracks.yaml first:
+cd /tmp && git clone https://github.com/robosoft-ai/SMACC2-release.git && cd SMACC2-release
 sed -i 's/last_version: OLD_VERSION/last_version: X.Y.Z/g' tracks.yaml
-git add tracks.yaml
-git commit -m "Update tracks.yaml to version X.Y.Z"
+git add tracks.yaml && git commit -m "Update tracks.yaml to X.Y.Z"
 
-# Run bloom release
-bloom-release smacc2 --rosdistro humble --track humble --unsafe
-
-# When prompted about missing dependencies:
-# - Type 'y' if dependency is optional (e.g., demo packages)
-# - Type 'n' if dependency is critical
-
-# When prompted about creating fork/PR:
-# - Type 'y' to attempt automatic PR creation
-# - If it fails (403 error), you'll create PR manually
+# Run bloom
+bloom-release smacc2 --rosdistro jazzy --track jazzy --unsafe
+# Prompt: missing optional dependencies → 'y'
+# Prompt: create automatic PR → 'y' (will likely fail with 403; proceed to Phase 5)
 ```
 
-**Expected Output:**
-```
-Releasing package 'smacc2' for 'humble' to: 'release/humble/smacc2'
-[... many package releases ...]
-==> git-bloom-generate -y rosdebian --prefix release/humble humble -i 1
-[... debian branch generation ...]
-
-Open a pull request from 'username/rosdistro:bloom-smacc2-0' into 'ros/rosdistro:master'?
-Continue [Y/n]? y
+**After bloom completes — verify snapshot branches were created:**
+```bash
+git ls-remote https://github.com/robosoft-ai/SMACC2-release.git \
+  | grep "ros-jazzy-smacc2_X.Y.Z"
+# Expected (replace X.Y.Z and REV):
+#   refs/heads/debian/ros-jazzy-smacc2_X.Y.Z-REV_noble
+#   refs/heads/debian/ros-jazzy-smacc2-msgs_X.Y.Z-REV_noble
 ```
 
-**If Automatic PR Fails:**
+If these branches are **missing**, create them manually before submitting the rosdistro PR:
+```bash
+cd /tmp/SMACC2-release
+git checkout debian/jazzy/noble/smacc2
+git checkout -b debian/ros-jazzy-smacc2_X.Y.Z-REV_noble
+git push origin debian/ros-jazzy-smacc2_X.Y.Z-REV_noble
 
-Bloom creates the commit locally but can't push due to authentication. The commit is in a temporary directory that gets cleaned up. You'll need to manually create the rosdistro PR.
+git checkout debian/jazzy/noble/smacc2_msgs
+git checkout -b debian/ros-jazzy-smacc2-msgs_X.Y.Z-REV_noble
+git push origin debian/ros-jazzy-smacc2-msgs_X.Y.Z-REV_noble
+```
+The Jenkins `Jsrc_` source jobs clone these exact branches; if absent, they fail and
+are eventually auto-disabled by Jenkins.
 
-### Phase 5: Manual rosdistro PR Creation (Human on Host)
-
-**If bloom's automatic PR failed:**
+### Phase 5: rosdistro PR (Human + Claude)
 
 ```bash
-# Clone your rosdistro fork
 cd /tmp
-git clone https://github.com/YOUR_USERNAME/rosdistro.git
-cd rosdistro
-
-# Create release branch from latest upstream
+git clone https://github.com/brettpac/rosdistro.git && cd rosdistro
 git remote add upstream https://github.com/ros/rosdistro.git
 git fetch upstream
 git checkout -b smacc2-X.Y.Z-release upstream/master
 
-# Find the smacc2 entry
-grep -n "smacc2:" humble/distribution.yaml
-# Output: 10934:  smacc2:
+# Update version
+sed -i 's/version: OLD_VERSION-REV/version: X.Y.Z-REV/g' jazzy/distribution.yaml
+```
 
-# Update the version (Claude will provide the sed command)
-sed -i 's/version: OLD_VERSION-REV/version: X.Y.Z-REV/g' humble/distribution.yaml
+**Claude runs the package filter:**
+```bash
+python3 /path/to/SMACC2/.github/filter_rosdistro.py jazzy/distribution.yaml
+# Preview only: add --dry-run
+```
 
-# Verify the change
-sed -n 'LINE_NUMBER,LINE_NUMBER+15p' humble/distribution.yaml | grep version
+The approved list is maintained in `.github/filter_rosdistro.py` (`APPROVED_PACKAGES`) and
+mirrored in the Package Release List table above.
 
-# Commit and push
-git add humble/distribution.yaml
-git commit -m "smacc2: X.Y.Z-REV in 'humble/distribution.yaml' [bloom]"
+```bash
+git add jazzy/distribution.yaml
+git commit -m "smacc2: X.Y.Z-REV in 'jazzy/distribution.yaml' [bloom]"
 git push origin smacc2-X.Y.Z-release
 ```
 
-**Create PR on GitHub:**
-- Go to your fork: `https://github.com/YOUR_USERNAME/rosdistro`
-- Click "Compare & pull request"
-- **Base:** `ros/rosdistro:master`
-- **Title:** `smacc2: X.Y.Z-REV in 'humble/distribution.yaml' [bloom]`
-- **Description:**
-  ```markdown
-  Increasing version of package(s) in repository `smacc2` to `X.Y.Z-REV`:
+**Claude drafts the PR description; human creates PR on GitHub:**
+- Base: `ros/rosdistro:master`
+- Title: `smacc2: X.Y.Z-REV in 'jazzy/distribution.yaml' [bloom]`
 
-  - upstream repository: https://github.com/robosoft-ai/SMACC2.git
-  - release repository: https://github.com/robosoft-ai/SMACC2-release.git
-  - distro file: `humble/distribution.yaml`
-  - bloom version: `0.13.0`
-  - previous version for package: `OLD_VERSION-REV`
-  ```
+### Phase 6: GitHub Release & Communication (Claude + Human)
 
-### Phase 6: Documentation & Communication (Claude + Human)
+Claude drafts; human publishes:
+1. GitHub release notes at `github.com/robosoft-ai/SMACC2/releases/new` (select tag X.Y.Z)
+2. Comment on any issues fixed by this release
 
-**Claude generates, human publishes:**
+### Phase 7: Cleanup (Human)
 
-**1. GitHub Release Notes**
-- Go to: `https://github.com/robosoft-ai/SMACC2/releases/new`
-- Select tag: `X.Y.Z`
-- Copy title and description from Claude's prepared notes
-- Publish release
-
-**2. Issue Update (if release fixes an issue)**
-- Post Claude-generated comment on relevant issue
-- Include installation instructions for both apt and source users
-- Note expected timeline for apt availability (24-48 hours)
-
-**3. rosdistro PR Link**
-- Update issue/release notes with rosdistro PR link once created
-
-### Phase 7: Monitor & Verify (Human on Host)
-
-**Timeline:**
-- **Day 0:** Release created, rosdistro PR submitted
-- **Day 1-2:** ROS maintainers review and merge rosdistro PR
-- **Day 2-3:** Buildfarm compiles packages
-- **Day 3-4:** Packages sync to apt.ros.org
-
-**Monitoring Commands:**
+Remove the px4_msgs rosdep override and all temporary release directories.
 
 ```bash
-# Check rosdistro PR status
-# Visit: https://github.com/ros/rosdistro/pulls
-
-# Check buildfarm status (after PR merge)
-# Visit: https://build.ros2.org/job/Hbin_uJ64__smacc2__ubuntu_jammy_amd64__binary/
-
-# Check apt package availability
-apt-cache policy ros-humble-smacc2
-# Should eventually show: Version: X.Y.Z-REVjammy...
-
-# Verify on clean system
-docker run -it ros:humble-ros-base bash
-apt update
-apt install ros-humble-smacc2
-apt show ros-humble-smacc2 | grep Version
+cd /tmp
+sudo rm /etc/ros/rosdep/sources.list.d/99-local.list
+sudo rm -f /tmp/local-rosdep.yaml
+rm -rf /tmp/SMACC2-release /tmp/rosdistro
 ```
 
-**Final Steps:**
-- Update issue with confirmation of apt availability
-- Close related issues
-- Announce release in appropriate channels
+### Phase 8: Monitor
 
-## Common Issues & Solutions
+After the rosdistro PR merges, packages travel through three repositories before
+reaching end users. Each stage has its own timeline.
 
-### Issue 1: Bloom Uses Wrong Version
+#### Repository Pipeline
 
-**Symptom:**
+| Stage | Repo | How it gets there | Typical delay after merge |
+|-------|------|-------------------|--------------------------|
+| **Building** | `repo.ros2.org/ubuntu/building` | Jenkins binary jobs run automatically | Day 2–4 |
+| **Testing** | `repo.ros2.org/ubuntu/testing` | Auto-synced from building | Day 3–5 |
+| **Main** (public) | `packages.ros.org/ros2/ubuntu` | **Manual sync** by ROS release manager | Day 3–17 |
+
+> The main sync is manual and runs **approximately every two weeks**. There is no fixed
+> schedule. A package can sit in testing for up to two weeks before `apt install` works
+> for regular users.
+
+#### Timeline
+
+| Day | Event |
+|-----|-------|
+| 0 | rosdistro PR submitted |
+| 1-2 | ROS maintainers merge PR |
+| 2-4 | Buildfarm source + binary builds complete |
+| 3-5 | Packages appear in **building** and **testing** repos |
+| 3-17 | Waiting for manual sync to **main** repo |
+| ~17 | `apt install ros-jazzy-smacc2` works for all users |
+
+#### Check current sync status
+
+```bash
+# Check which repo stage smacc2 is in right now:
+# https://repo.ros2.org/status_page/ros_jazzy_default.html
+# (look for smacc2 row; B=building, T=testing, M=main)
+
+# Install from testing while waiting for main sync:
+sudo apt install -y ros-jazzy-smacc2 \
+  --target-release=ros-testing
+
+# Check version available in main:
+apt-cache policy ros-jazzy-smacc2
 ```
-Releasing package 'smacc2' for 'humble' to: 'release/humble/smacc2'
-ros-humble-smacc2 (2.3.18-1jammy) jammy; urgency=high  # <-- OLD VERSION!
-```
 
-**Solution:**
+- Jazzy sync status page: https://repo.ros2.org/status_page/ros_jazzy_default.html
+- Buildfarm: https://build.ros2.org/
+- rosdistro PRs: https://github.com/ros/rosdistro/pulls
+
+## Common Issues
+
+### Bloom uses wrong version
+
 ```bash
 cd /tmp/SMACC2-release
-# Manually update tracks.yaml
 sed -i 's/last_version: OLD_VERSION/last_version: X.Y.Z/g' tracks.yaml
-git add tracks.yaml
-git commit -m "Update tracks.yaml to version X.Y.Z"
-# Re-run bloom-release
-bloom-release smacc2 --rosdistro humble --track humble --unsafe
+git add tracks.yaml && git commit -m "Update tracks.yaml to X.Y.Z"
+bloom-release smacc2 --rosdistro jazzy --track jazzy --unsafe
 ```
 
-### Issue 2: rosdep Update Fails
+### rosdep update fails
 
-**Symptom:**
-```
-ERROR: unable to process source [file:///usr/share/python3-rosdep2/debian.yaml]:
-Failed to update rosdep, did you run 'rosdep init' first?
-```
-
-**Solution:**
 ```bash
-# Disable broken local rosdep source
 sudo mv /etc/ros/rosdep/sources.list.d/10-debian.list \
         /etc/ros/rosdep/sources.list.d/10-debian.list.disabled
-
-# Verify fix
 rosdep update
-# Should show warnings but complete successfully
 ```
 
-### Issue 3: Missing Dependency in Bloom
+### Missing dependency prompt during bloom
 
-**Symptom:**
-```
-Could not resolve rosdep key 'some_package'
-Failed to resolve some_package on ubuntu:jammy
-```
+- Optional/demo package dependency → answer `y`
+- Critical dependency → fix before proceeding
 
-**Solution:**
-- If dependency is for optional/demo packages: Answer **'y'** to continue
-- If dependency is critical: Fix the dependency issue before proceeding
-- Most SMACC2 demo state machines have optional dependencies that can be skipped
+## Version Numbering
 
-### Issue 4: Tag Not on Correct Branch
+- **PATCH** (X.Y.Z+1): Bug fixes, no API changes
+- **MINOR** (X.Y+1.0): New features, backward compatible
+- **MAJOR** (X+1.0.0): Breaking changes
 
-**Symptom:**
-Tag was created on feature branch, then PR was merged to humble, but tag isn't on humble branch.
-
-**Solution:**
-```bash
-# After PR is merged to humble
-git checkout humble
-git pull origin humble
-
-# Re-create tag on humble branch
-git tag -d X.Y.Z  # Delete local tag
-git push origin :refs/tags/X.Y.Z  # Delete remote tag
-git tag -a X.Y.Z -m "Release X.Y.Z - [description]"
-git push origin X.Y.Z
-
-# Verify tag is on humble
-git branch --contains X.Y.Z
-# Should show: humble
-```
-
-### Issue 5: GitHub Authentication Fails
-
-**Symptom:**
-```
-fatal: could not read Username for 'https://github.com': No such device or address
-```
-
-**Solution:**
-Ensure you're on the host system (not Docker) with configured GitHub credentials:
-```bash
-# Use SSH URLs (recommended)
-git remote set-url origin git@github.com:robosoft-ai/SMACC2.git
-
-# OR use GitHub CLI
-gh auth login
-
-# OR use personal access token
-# Create token at: https://github.com/settings/tokens
-git config --global credential.helper store
-git push  # Will prompt for username and token
-```
-
-## Version Numbering Guidelines
-
-**Semantic Versioning (MAJOR.MINOR.PATCH):**
-
-- **PATCH (X.Y.Z → X.Y.Z+1):** Bug fixes, no API changes
-  - Example: Fixing double onExit() calls
-  - Most common for maintenance releases
-
-- **MINOR (X.Y.Z → X.Y+1.0):** New features, backward compatible
-  - Example: New client library (cl_moveit2z)
-  - Component additions
-  - Non-breaking API extensions
-
-- **MAJOR (X.Y.Z → X+1.0.0):** Breaking changes
-  - Example: Namespace restructuring that breaks user code
-  - Signature changes to public APIs
-  - Removed deprecated features
-
-**Debian Revision (-REV):**
-- Increments with each bloom release for same upstream version
-- Usually `-1` for first release, `-2` if you need to re-release
-- Example: `2.3.20-1`, `2.3.20-2`
+**Debian revision** (`-REV`): Starts at `-1`, increment if re-releasing the same upstream version.
 
 ## Release Checklist
 
-**Before Starting:**
-- [ ] Verify you have maintainer access to SMACC2 repositories
-- [ ] Fork `ros/rosdistro` to your GitHub account
-- [ ] Install bloom on host: `pip3 install --user bloom`
-- [ ] Configure git identity on host
-- [ ] Test GitHub authentication
-
-**Release Steps:**
 - [ ] Claude verifies fix/feature in code
-- [ ] Claude reviews commits and determines version
-- [ ] Claude updates package.xml files (42 packages)
+- [ ] Claude determines version number
+- [ ] Claude updates all `package.xml` files
 - [ ] Claude generates CHANGELOG entry
-- [ ] Human commits and pushes changes
-- [ ] Human creates and merges PR to humble branch
-- [ ] Human creates and pushes release tag
-- [ ] Human fixes rosdep issues (if any)
+- [ ] Human commits, tags, pushes, merges PR to jazzy
+- [ ] Human adds px4_msgs rosdep override (see Phase 4)
 - [ ] Human runs bloom-release
-- [ ] Human creates rosdistro PR (manual if bloom fails)
-- [ ] Human creates GitHub release with Claude's notes
-- [ ] Human posts issue updates
+- [ ] Human verifies snapshot branches exist in SMACC2-release (see Phase 4)
+- [ ] Claude runs `filter_rosdistro.py` on distribution.yaml
+- [ ] Human commits filtered distribution.yaml and creates rosdistro PR
+- [ ] Human removes px4_msgs rosdep override: `sudo rm /etc/ros/rosdep/sources.list.d/99-local.list`
+- [ ] Claude drafts GitHub release notes
+- [ ] Human publishes GitHub release and posts issue updates
 - [ ] Human monitors rosdistro PR merge (1-2 days)
-- [ ] Human monitors buildfarm (1-2 days after merge)
 - [ ] Human verifies apt package availability
-- [ ] Human closes related issues
 
-**Time Estimates:**
-- Active work: 2-4 hours (spread across Claude + Human)
-- Total calendar time: 3-5 days (waiting for buildfarm)
+## Reference Links
 
-## Reference Files
+### Release Infrastructure
+- Release tracks: https://github.com/robosoft-ai/SMACC2-release/blob/master/tracks.yaml
+- rosdistro entry: https://github.com/ros/rosdistro/blob/master/jazzy/distribution.yaml
+- Buildfarm root: https://build.ros2.org/
+- **Jazzy sync status** (B/T/M pipeline): https://repo.ros2.org/status_page/ros_jazzy_default.html
+- Buildfarm overview docs: https://docs.ros.org/en/rolling/The-ROS2-Project/Contributing/Build-Farms.html
+- Buildfarm infrastructure issues: https://github.com/ros-infrastructure/ros_buildfarm/issues
+- Buildfarm Discourse (contact for job re-enablement): https://discourse.openrobotics.org/c/infrastructure-project/infra-buildfarm/20
 
-**Version Locations:**
-- All package.xml files: `find . -name package.xml | xargs grep "<version>"`
-- Main package: `smacc2/package.xml`
-- Messages: `smacc2_msgs/package.xml`
+### Bloom
+- Bloom wiki: http://wiki.ros.org/bloom
+- Bloom readthedocs: https://bloom.readthedocs.io/en/latest/
+- Bloom GitHub: https://github.com/ros-infrastructure/bloom
+- ROS2 Release Process: https://docs.ros.org/en/rolling/How-To-Guides/Releasing/First-Time-Release.html
 
-**Documentation:**
-- Main CHANGELOG: `smacc2/CHANGELOG.rst`
-- Release tracks: `https://github.com/robosoft-ai/SMACC2-release/blob/master/tracks.yaml`
-- rosdistro entry: `https://github.com/ros/rosdistro/blob/master/humble/distribution.yaml`
+## Buildfarm Monitoring Pages
 
-**Monitoring:**
-- Buildfarm: `https://build.ros2.org/`
-- Apt packages: `http://packages.ros.org/ros2/ubuntu/pool/main/r/ros-humble-smacc2/`
-- rosdistro PRs: `https://github.com/ros/rosdistro/pulls`
+Check these after each release to confirm all targets build successfully.
 
-## Example: Release 2.3.20 Process
+### smacc2
 
-This section documents the actual release process for version 2.3.20, which fixed the critical double onExit() bug (#556).
+| Build | Link |
+|-------|------|
+| Jazzy · Noble · amd64 · binary | https://build.ros2.org/view/Jbin_uN64/job/Jbin_uN64__smacc2__ubuntu_noble_amd64__binary/ |
+| Jazzy · Noble · arm64 · binary | https://build.ros2.org/view/Jbin_unv8_uNv8/job/Jbin_unv8_uNv8__smacc2__ubuntu_noble_arm64__binary/ |
+| Jazzy · Noble · source | https://build.ros2.org/view/Jsrc_uN/job/Jsrc_uN__smacc2__ubuntu_noble__source/ |
+| Jazzy · Noble · dev | https://build.ros2.org/view/Jdev/job/Jdev__smacc2__ubuntu_noble_amd64/ |
+| Humble · Jammy · amd64 · binary | https://build.ros2.org/view/Hbin_uJ64/job/Hbin_uJ64__smacc2__ubuntu_jammy_amd64__binary/ |
+| Humble · Jammy · arm64 · binary | https://build.ros2.org/view/Hbin_ujv8_uJv8/job/Hbin_ujv8_uJv8__smacc2__ubuntu_jammy_arm64__binary/ |
 
-### Initial Analysis
+### smacc2_msgs
 
-```bash
-# Claude verified the fix
-git log --oneline | grep "double finishing"
-# Output: 1fabc680 remove double finishing (#558)
+| Build | Link |
+|-------|------|
+| Jazzy · Noble · amd64 · binary | https://build.ros2.org/view/Jbin_uN64/job/Jbin_uN64__smacc2_msgs__ubuntu_noble_amd64__binary/ |
+| Jazzy · Noble · arm64 · binary | https://build.ros2.org/view/Jbin_unv8_uNv8/job/Jbin_unv8_uNv8__smacc2_msgs__ubuntu_noble_arm64__binary/ |
+| Jazzy · Noble · source | https://build.ros2.org/view/Jsrc_uN/job/Jsrc_uN__smacc2_msgs__ubuntu_noble__source/ |
+| Humble · Jammy · amd64 · binary | https://build.ros2.org/view/Hbin_uJ64/job/Hbin_uJ64__smacc2_msgs__ubuntu_jammy_amd64__binary/ |
+| Humble · Jammy · arm64 · binary | https://build.ros2.org/view/Hbin_ujv8_uJv8/job/Hbin_ujv8_uJv8__smacc2_msgs__ubuntu_jammy_arm64__binary/ |
 
-# Reviewed commits since 2.3.19
-git log 2.3.19..HEAD --oneline
-# Found 54 commits including the fix and major refactoring
+---
 
-# Decision: 2.3.20 (patch release for critical bug fix)
-```
+# Release Status Log
 
-### Version Updates
+## 3.1.0 — 2026-06-11
 
-```bash
-# Claude updated all 42 package.xml files
-find . -name "package.xml" -exec sed -i 's/<version>2\.3\.19<\/version>/<version>2.3.20<\/version>/g' {} \;
-
-# Verified
-find . -name "package.xml" -exec grep -H "<version>" {} \; | grep -v "2.3.20" | wc -l
-# Output: 0 (all updated)
-```
-
-### Commit and Tag
-
-```bash
-# Configured git on host
-git config user.email "brett@robosoft.ai"
-git config user.name "brettpac"
-
-# Committed changes
-git add -A
-git commit -m "Prepare release 2.3.20..."
-
-# Created tag
-git tag -a 2.3.20 -m "Release 2.3.20 - Fix double onExit() calls (#556)"
-
-# Pushed (after PR merge to humble)
-git push origin humble
-git push origin 2.3.20
-```
-
-### Bloom Release
-
-```bash
-# Fixed rosdep issue
-sudo mv /etc/ros/rosdep/sources.list.d/10-debian.list \
-        /etc/ros/rosdep/sources.list.d/10-debian.list.disabled
-
-# Updated tracks.yaml (bloom initially used old version)
-cd /tmp/SMACC2-release
-sed -i 's/last_version: 2\.3\.18/last_version: 2.3.20/g' tracks.yaml
-git add tracks.yaml
-git commit -m "Update tracks.yaml to version 2.3.20"
-
-# Ran bloom
-bloom-release smacc2 --rosdistro humble --track humble --unsafe
-# Answered 'y' to missing ros_publisher_client dependency (optional demo package)
-# Automatic PR failed with 403 error
-```
-
-### Manual rosdistro PR
-
-```bash
-# Cloned fork
-cd /tmp
-git clone https://github.com/brettpac/rosdistro.git
-cd rosdistro
-git remote add upstream https://github.com/ros/rosdistro.git
-git fetch upstream
-git checkout -b smacc2-2.3.20-release upstream/master
-
-# Updated version
-grep -n "smacc2:" humble/distribution.yaml
-# Output: 10934:  smacc2:
-sed -i 's/version: 2\.3\.18-1/version: 2.3.20-2/g' humble/distribution.yaml
-
-# Committed and pushed
-git add humble/distribution.yaml
-git commit -m "smacc2: 2.3.20-2 in 'humble/distribution.yaml' [bloom]"
-git push origin smacc2-2.3.20-release
-
-# Created PR on GitHub
-# PR link: [to be filled after creation]
-```
-
-### Outcome
-
-- ✅ Version 2.3.20 released with double onExit() fix
-- ✅ All 42 packages version-locked at 2.3.20
-- ✅ Comprehensive CHANGELOG entry created
-- ✅ Debian release branches created with 2.3.20-2
-- ✅ rosdistro PR submitted
-- ⏳ Awaiting buildfarm (24-48 hours)
-
-## References
-
-- [Bloom Documentation](http://wiki.ros.org/bloom)
-- [ROS2 Release Process](https://docs.ros.org/en/rolling/How-To-Guides/Releasing/First-Time-Release.html)
-- [rosdistro Repository](https://github.com/ros/rosdistro)
-- [Semantic Versioning](https://semver.org/)
-- [ROS2 Buildfarm](https://build.ros2.org/)
+| Item | Status |
+|------|--------|
+| bloom-release (3.1.0-2) | ✅ Complete |
+| Snapshot branches + tags in SMACC2-release at correct 3.1.0-2 SHA | ✅ Complete |
+| Original rosdistro PR (all 54 packages) | ✅ Merged — ros/rosdistro#51737 |
+| Corrective rosdistro PR (remove 52 packages) | ⏳ Submitted, awaiting merge |
+| Jenkins source jobs re-enabled | ⏳ Requested — ros-infrastructure/ros_buildfarm#1137 |
+| Source builds pass | ⏳ Blocked on re-enablement |
+| Binary builds pass | ⏳ Blocked on source builds |
+| apt availability | ⏳ Blocked on builds |
+| px4_msgs rosdep override cleanup | ✅ Complete |

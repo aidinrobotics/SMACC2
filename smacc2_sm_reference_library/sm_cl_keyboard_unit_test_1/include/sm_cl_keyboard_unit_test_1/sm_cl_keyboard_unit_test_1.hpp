@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 // CLIENTS
 #include <cl_ros2_timer/cl_ros2_timer.hpp>
-#include <cl_ros2_timer/components/cp_timer_listener_1.hpp>
-
 #include <cl_keyboard/cl_keyboard.hpp>
 #include <cl_keyboard/components/cp_keyboard_listener_1.hpp>
 
@@ -35,7 +33,6 @@ using namespace boost;
 using namespace smacc2;
 using namespace cl_ros2_timer;
 using namespace cl_keyboard;
-using namespace cl_keyboard::components;
 
 namespace sm_cl_keyboard_unit_test_1
 {

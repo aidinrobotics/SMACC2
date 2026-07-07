@@ -20,6 +20,7 @@ find_package(Boost COMPONENTS thread REQUIRED)
 find_package(cl_moveit2z REQUIRED)
 find_package(cl_keyboard REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -47,6 +48,7 @@ target_link_libraries(${PROJECT_NAME}_node
   ${cl_ros2_timer_LIBRARIES}
   ${moveit2z_LIBRARIES}
   ${Boost_LIBRARIES}
+  yaml-cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_node ${THIS_PACKAGE_INCLUDE_DEPENDS})

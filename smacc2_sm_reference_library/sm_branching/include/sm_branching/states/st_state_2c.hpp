@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ struct State2c : smacc2::SmaccState<State2c, SmBranching>
   // STATE FUNCTIONS
   static void staticConfigure()
   {
-    // EvTimer triggers once at 10 client ticks
-    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(5);
+    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(5s);
   }
 
   void runtimeConfigure() { RCLCPP_INFO(getLogger(), "Entering State2"); }

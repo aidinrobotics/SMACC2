@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@
 
 #pragma once
 #include <smacc2/introspection/introspection.hpp>
+#include <smacc2/introspection/smacc_type_info.hpp>
 #include <smacc2/smacc_client_behavior.hpp>
 #include <smacc2/smacc_orthogonal.hpp>
 #include <smacc2/smacc_state.hpp>
-#include <smacc2/smacc_state_reactor.hpp>
-//#include <smacc2/smacc_event_generator.hpp>
-#include <smacc2/introspection/smacc_type_info.hpp>
-#include <smacc2/smacc_client_behavior.hpp>
 #include <smacc2/smacc_state_machine.hpp>
+#include <smacc2/smacc_state_reactor.hpp>
 
 namespace smacc2
 {
@@ -47,7 +45,6 @@ std::shared_ptr<TBehavior> ISmaccState::configure(Args &&... args)
       std::shared_ptr<TBehavior>(new TBehavior(args...));  // is there an error here? are the
                                                            // behavior constructor parameters right?
     orthogonal->addClientBehavior(clientBehavior);
-    clientBehavior->template onOrthogonalAllocation<TOrthogonal, TBehavior>();
     clientBehavior->template onStateOrthogonalAllocation<TOrthogonal, TBehavior>();
     return clientBehavior;
   }
@@ -107,8 +104,6 @@ template <typename TStateReactor, typename... TEvArgs>
 std::shared_ptr<TStateReactor> ISmaccState::createStateReactor(TEvArgs... args)
 {
   auto sr = std::make_shared<TStateReactor>(args...);
-  // sb->initialize(this, mock);
-  // sb->setOutputEvent(typelist<TTriggerEvent>());
   stateReactors_.push_back(sr);
   return sr;
 }
@@ -204,16 +199,6 @@ TStateReactor * ISmaccState::getStateReactor()
   return ret;
 }
 
-// template <typename TStateReactor, typename TTriggerEvent, typename... TEvArgs>
-// std::shared_ptr<TStateReactor> ISmaccState::createStateReactor(TEvArgs... args)
-// {
-//     auto sb = std::make_shared<TStateReactor>(std::forward(args...));
-//     sb->initialize(this, typelist<TEvArgs...>());
-//     sb->setOutputEvent(typelist<TTriggerEvent>());
-//     stateReactors_.push_back(sb);
-
-//     return sb;
-// }
 //-------------------------------------------------------------------------------------------------------
 
 template <typename EventType>

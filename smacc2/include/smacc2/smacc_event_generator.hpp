@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,12 +41,6 @@ public:
 
   template <typename TState, typename TSource>
   void onStateOrthogonalAllocation();
-
-  template <typename TState, typename TSource>
-  [[deprecated(
-    "Use onStateOrthogonalAllocation instead. This method will be removed in future "
-    "releases.")]] void
-  onOrthogonalAllocation();
 
   virtual void onEntry();
   virtual void onExit();

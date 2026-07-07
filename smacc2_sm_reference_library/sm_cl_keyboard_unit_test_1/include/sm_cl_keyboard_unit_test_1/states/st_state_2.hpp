@@ -18,7 +18,6 @@ namespace sm_cl_keyboard_unit_test_1
 {
 using namespace cl_ros2_timer;
 using namespace cl_keyboard;
-using namespace cl_keyboard::components;
 using namespace smacc2::default_transition_tags;
 
 // STATE DECLARATION
@@ -37,7 +36,7 @@ struct State2 : smacc2::SmaccState<State2, SmClKeyboardUnitTest1>
   // STATE FUNCTIONS
   static void staticConfigure()
   {
-    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(10);  // EvTimer triggers once at 10 client ticks
+    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(10s);
     configure_orthogonal<OrKeyboard, CbDefaultKeyboardBehavior>();
   }
 

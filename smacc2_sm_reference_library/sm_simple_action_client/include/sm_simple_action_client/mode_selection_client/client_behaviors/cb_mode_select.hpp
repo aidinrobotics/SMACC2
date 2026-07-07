@@ -1,5 +1,5 @@
 
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public:
     mode_select_client_->onFirstMessageReceived(&CbModeSelect::onFirstMessageReceived, this);
     mode_select_client_->onMessageReceived(&CbModeSelect::onMessageReceived, this);
   }
-  void onFirstMessageReceived(const example_interfaces::msg::Int32 & msg)
+  void onFirstMessageReceived(const example_interfaces::msg::Int32 & /*msg*/)
   {
     RCLCPP_INFO(getLogger(), "CbModeSelect::onFirstMessageReceived()");
   }

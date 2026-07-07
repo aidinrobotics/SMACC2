@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ struct State2 : smacc2::SmaccState<State2, MsState2>
 // STATE FUNCTIONS
     static void staticConfigure()
     {
-        configure_orthogonal<OrTimer, CbTimerCountdownOnce>(2); // EvTimer triggers once at 10 client ticks
+        configure_orthogonal<OrTimer, CbTimerCountdownOnce>(2s);
         configure_orthogonal<OrTimer, CbUpdatableTest>();
     }
 

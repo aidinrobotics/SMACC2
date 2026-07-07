@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,14 +60,14 @@ public:
   std::function<void(const MessageType &)> postInitialMessageEvent;
 
   template <typename T>
-  boost::signals2::connection onMessageReceived(
+  smacc2::SmaccSignalConnection onMessageReceived(
     void (T::*callback)(const MessageType &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onMessageReceived_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onFirstMessageReceived(
+  smacc2::SmaccSignalConnection onFirstMessageReceived(
     void (T::*callback)(const MessageType &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(
@@ -75,7 +75,7 @@ public:
   }
 
   template <typename TOrthogonal, typename TSourceObject>
-  void onOrthogonalAllocation()
+  void onStateOrthogonalAllocation()
   {
     // ros topic message received smacc event callback
     this->postMessageEvent = [this](auto msg)

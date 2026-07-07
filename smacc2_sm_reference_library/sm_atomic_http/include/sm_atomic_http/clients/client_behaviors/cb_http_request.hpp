@@ -21,7 +21,7 @@
 #pragma once
 
 #include <cstring>
-#include <http_client/client_behaviors/cb_http_get_request.hpp>
+#include <cl_http/client_behaviors/cb_http_get_request.hpp>
 #include <smacc2/smacc.hpp>
 
 namespace sm_atomic_http
@@ -36,7 +36,7 @@ class CbHttpRequest : public cl_http::CbHttpGetRequest
 {
 public:
   template <typename TOrthogonal, typename TSourceObject>
-  void onOrthogonalAllocation()
+  void onStateOrthogonalAllocation()
   {
     triggerTranstition = [this]()
     {

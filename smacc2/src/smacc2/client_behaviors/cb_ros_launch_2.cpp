@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ CbRosLaunch2::CbRosLaunch2(std::string package, std::string launchfile, RosLaunc
 CbRosLaunch2::~CbRosLaunch2() {}
 
 template <typename TOrthogonal, typename TSourceObject>
-void onOrthogonalAllocation()
+void onStateOrthogonalAllocation()
 {
-  smacc2::SmaccAsyncClientBehavior::onOrthogonalAllocation<TOrthogonal, TSourceObject>();
+  smacc2::SmaccAsyncClientBehavior::onStateOrthogonalAllocation<TOrthogonal, TSourceObject>();
 }
 
 void CbRosLaunch2::onEntry()
@@ -64,7 +64,6 @@ void CbRosLaunch2::onEntry()
                                                 << "LaunchMode: " << (int)launchMode_);
 
     auto result_ = smacc2::client_bases::ClRosLaunch2::executeRosLaunch(
-      // this->result_ = smacc2::client_bases::ClRosLaunch2::executeRosLaunch(
       *packageName_, *launchFileName_, breakfunction);
   }
   else if (launchMode_ == RosLaunchMode::LAUNCH_DETTACHED)
@@ -78,7 +77,6 @@ void CbRosLaunch2::onEntry()
 
     RCLCPP_INFO_STREAM(getLogger(), "[CbRosLaunch2] finding Ros Launch client");
 
-    // this->requiresClient(client_);
     if (client_ != nullptr)
     {
       RCLCPP_INFO_STREAM(

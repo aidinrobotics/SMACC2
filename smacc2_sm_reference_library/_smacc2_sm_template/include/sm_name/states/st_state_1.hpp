@@ -1,5 +1,5 @@
 // Copyright 2021 MyName/MyCompany Inc.
-// Copyright 2021 RobosoftAI Inc. (template)
+// Copyright 2025 Robosoft Inc. (template)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -55,8 +55,8 @@ struct State1 : smacc2::SmaccState<State1, $SmName$>
   static void staticConfigure()
   {
     // START: Example code - change needed
-    configure_orthogonal<OrTimer, CbTimerCountdownLoop>(3);  // EvTimer triggers each 3 client ticks
-    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(5);  // EvTimer triggers once at 10 client ticks
+    configure_orthogonal<OrTimer, CbTimerCountdownLoop>(3s);
+    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(5s);
     // END: Example code - change or delete as needed
   }
 

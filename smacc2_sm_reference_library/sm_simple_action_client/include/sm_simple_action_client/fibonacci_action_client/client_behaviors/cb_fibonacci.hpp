@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,16 +27,16 @@ public:
   // virtual ~CbFibonacci();
 
   template <typename TOrthogonal, typename TSourceObject>
-  void onOrthogonalAllocation()
+  void onStateOrthogonalAllocation()
   {
     this->requiresClient(cl_fibonacci_);
-    smacc2::SmaccAsyncClientBehavior::onOrthogonalAllocation<TOrthogonal, TSourceObject>();
+    smacc2::SmaccAsyncClientBehavior::onStateOrthogonalAllocation<TOrthogonal, TSourceObject>();
   }
 
   void onEntry() override
   {
     ClFibonacci::Goal goal;
-    goal.order = 100;
+    goal.order = 10;
 
     fibonacciCallback_ = std::make_shared<ClFibonacci::FibonacciResultSignal>();
     this->getStateMachine()->createSignalConnection(

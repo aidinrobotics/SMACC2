@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ void ISmaccOrthogonal::requiresComponent(SmaccComponentType *& storage)
   {
     RCLCPP_ERROR(
       getLogger(),
-      "Cannot use the requiresComponent funcionality from an orthogonal before onInitialize");
+      "Cannot use the requiresComponent functionality from an orthogonal before onInitialize");
   }
   else
   {
@@ -85,7 +85,6 @@ void ISmaccOrthogonal::assignClientToOrthogonal(TClient * client)
   client->setStateMachine(getStateMachine());
   client->setOrthogonal(this);
 
-  client->template onOrthogonalAllocation<TOrthogonal, TClient>();
   client->template onStateOrthogonalAllocation<TOrthogonal, TClient>();
 }
 
@@ -171,13 +170,6 @@ public:
   template <typename TClient, typename... TArgs>
   std::shared_ptr<ClientHandler<TOrthogonal, TClient>> createClient(TArgs... args)
   {
-    //static_assert(std::is_base_of<ISmaccOrthogonal, TOrthogonal>::value, "The object Tag must be the orthogonal type where the client was created");
-    // if (typeid(*this) != typeid(TOrthogonal))
-    // {
-    //     RCLCPP_ERROR_STREAM(getLogger(),"Error creating client. The object Tag must be the type of the orthogonal where the client was created:" << demangleType(typeid(*this)) << ". The object creation was skipped and a nullptr was returned");
-    //     return nullptr;
-    // }
-
     RCLCPP_DEBUG(
       getLogger(), "[%s] Creating client object, type:'%s' object tag: '%s'",
       demangleType(typeid(*this)).c_str(), demangledTypeName<TClient>().c_str(),

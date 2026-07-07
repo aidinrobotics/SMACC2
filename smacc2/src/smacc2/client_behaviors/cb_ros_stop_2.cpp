@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ std::vector<std::future<std::string>> CbRosStop2::detached_futures_;
 
 CbRosStop2::CbRosStop2() {}
 
-CbRosStop2::CbRosStop2(pid_t launchPid) {}
+CbRosStop2::CbRosStop2(pid_t /*launchPid*/) {}
 
 CbRosStop2::~CbRosStop2() {}
 
 template <typename TOrthogonal, typename TSourceObject>
-void onOrthogonalAllocation()
+void onStateOrthogonalAllocation()
 {
-  smacc2::SmaccAsyncClientBehavior::onOrthogonalAllocation<TOrthogonal, TSourceObject>();
+  smacc2::SmaccAsyncClientBehavior::onStateOrthogonalAllocation<TOrthogonal, TSourceObject>();
 }
 
 void CbRosStop2::onEntry()

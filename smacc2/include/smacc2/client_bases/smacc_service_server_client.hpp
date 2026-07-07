@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public:
     onServiceRequestReceived_;
 
   template <typename T>
-  boost::signals2::connection onServiceRequestReceived(
+  smacc2::SmaccSignalConnection onServiceRequestReceived(
     void (T::*callback)(
       const std::shared_ptr<typename TService::Request>,
       std::shared_ptr<typename TService::Response>),

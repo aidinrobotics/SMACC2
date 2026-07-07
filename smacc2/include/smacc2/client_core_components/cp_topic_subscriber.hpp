@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,11 @@ public:
 
   CpTopicSubscriber() { initialized_ = false; }
 
-  CpTopicSubscriber(std::string topicname) { topicName_ = topicname; }
+  CpTopicSubscriber(std::string topicname)
+  {
+    topicName_ = topicname;
+    initialized_ = false;
+  }
 
   virtual ~CpTopicSubscriber() {}
 
@@ -52,7 +56,7 @@ public:
 
   // signal subscription method. This signal will be triggered when the first message is received
   template <typename T>
-  boost::signals2::connection onMessageReceived(
+  smacc2::SmaccSignalConnection onMessageReceived(
     void (T::*callback)(const MessageType &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onMessageReceived_, callback, object);
@@ -60,7 +64,7 @@ public:
 
   // signal subscription method. This signal will be triggered when the first message is received
   template <typename T>
-  boost::signals2::connection onFirstMessageReceived(
+  smacc2::SmaccSignalConnection onFirstMessageReceived(
     void (T::*callback)(const MessageType &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(

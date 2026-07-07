@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@
 
 #include <smacc2/component.hpp>
 
-#include <cl_moveit2z/cl_moveit2z.hpp>
+#include <cl_moveit2z/components/cp_move_group_interface.hpp>
 
-#include <moveit/move_group_interface/move_group_interface.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit/move_group_interface/move_group_interface.hpp>
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
 
@@ -87,7 +87,7 @@ public:
    */
   inline void onInitialize() override
   {
-    this->requiresClient(moveit2zClient_);
+    this->requiresComponent(cpMoveGroupInterface_);
     RCLCPP_INFO(getLogger(), "[CpMotionPlanner] Component initialized");
   }
 
@@ -105,14 +105,14 @@ public:
   {
     PlanningResult result;
 
-    if (!moveit2zClient_)
+    if (!cpMoveGroupInterface_)
     {
-      result.errorMessage = "ClMoveit2z client not available";
+      result.errorMessage = "CpMoveGroupInterface component not available";
       RCLCPP_ERROR(getLogger(), "[CpMotionPlanner] %s", result.errorMessage.c_str());
       return result;
     }
 
-    auto & moveGroup = moveit2zClient_->moveGroupClientInterface;
+    auto & moveGroup = cpMoveGroupInterface_->moveGroupClientInterface;
 
     try
     {
@@ -178,9 +178,9 @@ public:
   {
     PlanningResult result;
 
-    if (!moveit2zClient_)
+    if (!cpMoveGroupInterface_)
     {
-      result.errorMessage = "ClMoveit2z client not available";
+      result.errorMessage = "CpMoveGroupInterface component not available";
       RCLCPP_ERROR(getLogger(), "[CpMotionPlanner] %s", result.errorMessage.c_str());
       return result;
     }
@@ -192,7 +192,7 @@ public:
       return result;
     }
 
-    auto & moveGroup = moveit2zClient_->moveGroupClientInterface;
+    auto & moveGroup = cpMoveGroupInterface_->moveGroupClientInterface;
 
     try
     {
@@ -242,13 +242,13 @@ public:
    */
   inline PlanningResult planCartesianPath(
     const std::vector<geometry_msgs::msg::Pose> & waypoints, double maxStep = 0.01,
-    double jumpThreshold = 0.0, bool avoidCollisions = true)
+    double /*jumpThreshold*/ = 0.0, bool avoidCollisions = true)
   {
     PlanningResult result;
 
-    if (!moveit2zClient_)
+    if (!cpMoveGroupInterface_)
     {
-      result.errorMessage = "ClMoveit2z client not available";
+      result.errorMessage = "CpMoveGroupInterface component not available";
       RCLCPP_ERROR(getLogger(), "[CpMotionPlanner] %s", result.errorMessage.c_str());
       return result;
     }
@@ -260,7 +260,7 @@ public:
       return result;
     }
 
-    auto & moveGroup = moveit2zClient_->moveGroupClientInterface;
+    auto & moveGroup = cpMoveGroupInterface_->moveGroupClientInterface;
 
     try
     {
@@ -269,10 +269,10 @@ public:
         waypoints.size());
 
       moveit_msgs::msg::RobotTrajectory trajectory;
-      double fractionAchieved = moveGroup->computeCartesianPath(
-        waypoints, maxStep, jumpThreshold, trajectory, avoidCollisions);
+      double fractionAchieved =
+        moveGroup->computeCartesianPath(waypoints, maxStep, trajectory, avoidCollisions);
 
-      result.plan.trajectory_ = trajectory;
+      result.plan.trajectory = trajectory;
 
       // Consider successful if we achieved at least 95% of the path
       result.success = (fractionAchieved >= 0.95);
@@ -310,13 +310,13 @@ public:
    */
   inline moveit::core::RobotStatePtr getCurrentState(double waitTime = 1.0)
   {
-    if (!moveit2zClient_)
+    if (!cpMoveGroupInterface_)
     {
-      RCLCPP_ERROR(getLogger(), "[CpMotionPlanner] ClMoveit2z client not available");
+      RCLCPP_ERROR(getLogger(), "[CpMotionPlanner] CpMoveGroupInterface component not available");
       return nullptr;
     }
 
-    auto & moveGroup = moveit2zClient_->moveGroupClientInterface;
+    auto & moveGroup = cpMoveGroupInterface_->moveGroupClientInterface;
 
     try
     {
@@ -330,7 +330,7 @@ public:
   }
 
 private:
-  ClMoveit2z * moveit2zClient_ = nullptr;
+  CpMoveGroupInterface * cpMoveGroupInterface_ = nullptr;
 
   /**
    * @brief Apply planning options to MoveGroupInterface

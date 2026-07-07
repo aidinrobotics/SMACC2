@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,30 @@
 
 #pragma once
 #include <sm_three_some/clients/cl_subscriber/cl_subscriber.hpp>
+#include <cl_generic_sensor/client_behaviors/cb_default_generic_sensor_behavior.hpp>
 
 namespace sm_three_some
 {
 namespace cl_subscriber
 {
-class CbWatchdogSubscriberBehavior : public smacc2::SmaccClientBehavior
+// Watchdog subscriber behavior with timeout monitoring
+// Uses the multirole sensor behavior for component-based architecture
+class CbWatchdogSubscriberBehavior
+  : public cl_generic_sensor::CbDefaultGenericSensorBehavior<ClSubscriber>
 {
 public:
   typedef std_msgs::msg::UInt16 TMessageType;
 
-  void onEntry() {}
+  void onEntry() override
+  {
+    // Call base class onEntry to setup component connections
+    cl_generic_sensor::CbDefaultGenericSensorBehavior<ClSubscriber>::onEntry();
+
+    RCLCPP_INFO(getLogger(), "[CbWatchdogSubscriberBehavior] Watchdog behavior active");
+
+    // The timeout monitoring is handled automatically by the CpMessageTimeout component
+    // if it was configured in the ClSubscriber client
+  }
 };
 }  // namespace cl_subscriber
 }  // namespace sm_three_some
