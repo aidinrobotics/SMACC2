@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ public:
       rclcpp::sleep_for(10ms);
     }
 
-    //rclcpp::sleep_for(std::chrono::nanoseconds(sleeptime_.nanoseconds()));
     this->postSuccessEvent();
   }
 

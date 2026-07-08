@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ struct StState4 : smacc2::SmaccState<StState4, MsRun>
   struct PREVIOUS : ABORT{};
 
   // STATE FUNCTIONS
-  static void staticConfigure() { configure_orthogonal<OrTimer, CbTimerCountdownOnce>(10); }
+  static void staticConfigure() { configure_orthogonal<OrTimer, CbTimerCountdownOnce>(5s); }
 
   void runtimeConfigure() {}
 

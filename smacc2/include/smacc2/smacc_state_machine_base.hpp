@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,10 +43,7 @@ public:
   {
   }
 
-  virtual ~SmaccStateMachineBase()
-  {
-    //updateCurrentState<InitialStateType>(false);
-  }
+  virtual ~SmaccStateMachineBase() {}
 
   void reset() override
   {
@@ -74,15 +71,15 @@ public:
     // this is before because this creates orthogonals
     this->onInitialize();
 
-    RCLCPP_INFO(getLogger(), "[SmaccStateMachine] Introspecting state machine via typeWalker");
+    RCLCPP_DEBUG(getLogger(), "[SmaccStateMachine] Introspecting state machine via typeWalker");
     this->buildStateMachineInfo<InitialStateType>();
 
-    RCLCPP_INFO(getLogger(), "[SmaccStateMachine] initiate_impl");
+    RCLCPP_DEBUG(getLogger(), "[SmaccStateMachine] initiate_impl");
     auto shortname = smacc2::utils::cleanShortTypeName(typeid(DerivedStateMachine));
 
     this->initializeROS(shortname);
 
-    RCLCPP_INFO(getLogger(), "[SmaccStateMachine] Initializing ROS communication mechanisms");
+    RCLCPP_DEBUG(getLogger(), "[SmaccStateMachine] Initializing ROS communication mechanisms");
     this->onInitialized();
 
     // publish startup state machine transition info
@@ -90,7 +87,7 @@ public:
     transitionInfo->destinyState = this->stateMachineInfo_->getState<InitialStateType>();
     this->publishTransition(*transitionInfo);
 
-    RCLCPP_INFO(getLogger(), "[SmaccStateMachine] Initializing state machine");
+    RCLCPP_DEBUG(getLogger(), "[SmaccStateMachine] Initializing state machine");
     sc::state_machine<DerivedStateMachine, InitialStateType, SmaccAllocator>::initiate();
   }
 };

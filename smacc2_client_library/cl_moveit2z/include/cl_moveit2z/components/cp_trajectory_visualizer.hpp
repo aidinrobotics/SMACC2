@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public:
    *
    * @param publishRate Publishing rate (default: 10Hz)
    */
-  CpTrajectoryVisualizer(double publishRate = 10.0) : publishRate_(publishRate), enabled_(false) {}
+  CpTrajectoryVisualizer(double publishRate = 10.0) : enabled_(false), publishRate_(publishRate) {}
 
   virtual ~CpTrajectoryVisualizer() = default;
 

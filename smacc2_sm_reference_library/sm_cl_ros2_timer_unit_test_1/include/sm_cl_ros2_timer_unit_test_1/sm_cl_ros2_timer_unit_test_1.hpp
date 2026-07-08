@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 // CLIENTS
 #include <cl_ros2_timer/cl_ros2_timer.hpp>
-#include <cl_ros2_timer/components/cp_timer_listener_1.hpp>
-
 //CLIENT BEHAVIORS
 #include <cl_ros2_timer/client_behaviors/cb_timer_countdown_loop.hpp>
 #include <cl_ros2_timer/client_behaviors/cb_timer_countdown_once.hpp>

@@ -1,0 +1,3 @@
+# Created by smacc2_library/scripts/trim_smacc2_packages.sh
+# 'http_client' is not used by the airo SMACC2 stack; excluded from colcon build.
+# Remove with: trim_smacc2_packages.sh "/home/aidin/ros2_ws/smacc_ws/src/SMACC2" --restore

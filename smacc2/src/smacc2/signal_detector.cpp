@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,10 +28,7 @@
 #include <smacc2/client_bases/smacc_action_client_base.hpp>
 #include <smacc2/smacc_signal_detector.hpp>
 #include <smacc2/smacc_state_machine.hpp>
-// #include <smacc2/smacc_tracing/trace_provider.hpp>
 #include <smacc2/smacc_tracing/smacc_tracing.hpp>
-
-//#include "tracetools/tracetools.h"
 
 namespace smacc2
 {
@@ -67,6 +64,7 @@ SignalDetector::SignalDetector(SmaccFifoScheduler * scheduler, ExecutionModel ex
   loop_rate_hz = 20.0;
   end_ = false;
   initialized_ = false;
+  rosInitialized_ = false;
   executionModel_ = executionModel;
 }
 
@@ -83,6 +81,14 @@ void SignalDetector::initialize(ISmaccStateMachine * stateMachine)
   lastState_ = std::numeric_limits<int64_t>::quiet_NaN();
   findUpdatableClientsAndComponents();
   this->getNode()->declare_parameter("signal_detector_loop_freq", this->loop_rate_hz);
+
+  auto context = getNode()->get_node_base_interface()->get_context();
+  context->on_shutdown(
+    [this]()
+    {
+      this->stop();
+      this->terminateScheduler();
+    });
 
   initialized_ = true;
 }
@@ -204,6 +210,12 @@ void SignalDetector::notifyStateExited(ISmaccState * /*currentState*/)
   this->updatableStateElements_.pop_back();
 }
 
+void SignalDetector::notifyRosInitialized()
+{
+  RCLCPP_INFO(getLogger(), "[SignalDetector] ROS initialization complete, enabling polling loop");
+  rosInitialized_ = true;
+}
+
 /**
  ******************************************************************************************************************
  * setProcessorHandle()
@@ -261,14 +273,11 @@ void SignalDetector::pollOnce()
 {
   // precondition: smaccStateMachine_ != nullptr
 
-  //TRACEPOINT( spinOnce);
   TRACEPOINT(spinOnce);
 
   std::lock_guard<std::recursive_mutex> lock(smaccStateMachine_->m_mutex_);
   try
   {
-    //smaccStateMachine_->lockStateMachine("update behaviors");
-
     this->findUpdatableClientsAndComponents();
     RCLCPP_DEBUG_STREAM(getLogger(), "Updatable clients: " << this->updatableClients_.size());
 
@@ -277,7 +286,8 @@ void SignalDetector::pollOnce()
       auto node = getNode();
       for (auto * updatableClient : this->updatableClients_)
       {
-        auto updatableElementName = demangleType(typeid(*updatableClient)).c_str();
+        auto updatableElementNameStr = demangleType(typeid(*updatableClient));
+        auto updatableElementName = updatableElementNameStr.c_str();
         try
         {
           RCLCPP_DEBUG_STREAM(
@@ -333,10 +343,6 @@ void SignalDetector::pollOnce()
   {
     RCLCPP_ERROR(getLogger(), "Exception during Signal Detector update loop. %s.", ex.what());
   }
-
-  auto nh = this->getNode();
-  rclcpp::spin_some(nh);
-  //smaccStateMachine_->unlockStateMachine("update behaviors");
 }
 
 /**
@@ -350,16 +356,26 @@ void SignalDetector::pollingLoop()
   rclcpp::Node::SharedPtr _;
   rclcpp::Rate r0(20);
 
-  while (!initialized_)
+  // Wait for both SignalDetector::initialize() (called from ISmaccStateMachine constructor)
+  // and ROS initialization to complete (initializeROS called from initiate_impl).
+  // This ensures orthogonals, clients, and ROS objects are fully initialized
+  // before we start polling and accessing them.
+  while ((!initialized_ || !rosInitialized_) && rclcpp::ok() && !end_)
   {
     r0.sleep();
+  }
+
+  if (!rclcpp::ok() || end_)
+  {
+    RCLCPP_INFO(getLogger(), "[SignalDetector] Shutdown requested before initialization completed");
+    return;
   }
 
   auto nh = getNode();
 
   if (!nh->get_parameter("signal_detector_loop_freq", this->loop_rate_hz))
   {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       getLogger(),
       "Signal Detector frequency (ros param signal_detector_loop_freq) was not set, using default "
       "frequency: "
@@ -368,23 +384,23 @@ void SignalDetector::pollingLoop()
   }
   else
   {
-    RCLCPP_WARN(
+    RCLCPP_DEBUG(
       getLogger(), "Signal Detector frequency (ros param signal_detector_loop_freq): %lf",
       this->loop_rate_hz);
   }
 
   nh->set_parameter(rclcpp::Parameter("signal_detector_loop_freq", this->loop_rate_hz));
 
-  RCLCPP_INFO_STREAM(getLogger(), "[SignalDetector] Loop rate hz:" << loop_rate_hz);
+  RCLCPP_DEBUG_STREAM(getLogger(), "[SignalDetector] Loop rate hz:" << loop_rate_hz);
 
   if (this->executionModel_ == ExecutionModel::SINGLE_THREAD_SPINNER)
   {
-    RCLCPP_INFO_STREAM(getLogger(), "[SignalDetector] Running in single-threaded mode.");
+    RCLCPP_DEBUG_STREAM(getLogger(), "[SignalDetector] Running in single-threaded mode.");
 
     rclcpp::Rate r(loop_rate_hz);
     while (rclcpp::ok() && !end_)
     {
-      RCLCPP_INFO_STREAM_THROTTLE(
+      RCLCPP_DEBUG_STREAM_THROTTLE(
         getLogger(), *getNode()->get_clock(), 10000, "[SignalDetector] Heartbeat");
       pollOnce();
       rclcpp::spin_some(nh);
@@ -401,7 +417,7 @@ void SignalDetector::pollingLoop()
   }
 }
 
-void onSignalShutdown(int sig)
+void onSignalShutdown(int /*sig*/)
 {
   // IMPORTANT: Signal handlers can only call async-signal-safe functions
   // We must NOT call complex C++ methods here (like terminateScheduler)

@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  * 	 Authors: Pablo Inigo Blasco, Brett Aldrich
  *
  ******************************************************************************************************************/
-#include <errno.h>  // Agrega esta inclusión
-#include <fcntl.h>  // Agrega esta inclusión
+#include <errno.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -38,10 +38,7 @@ namespace smacc2
 namespace client_bases
 {
 using namespace std::chrono_literals;
-ClRosLaunch2::ClRosLaunch2(/*std::string packageName, std::string launchFilename*/)
-: /*packageName_(std::nullopt), launchFileName_(std::nullopt),*/ cancellationToken_(false)
-{
-}
+ClRosLaunch2::ClRosLaunch2() : cancellationToken_(false) {}
 
 ClRosLaunch2::ClRosLaunch2(std::string packageName, std::string launchFilename)
 : packageName_(packageName), launchFileName_(launchFilename), cancellationToken_(false)
@@ -53,23 +50,20 @@ ClRosLaunch2::~ClRosLaunch2() {}
 void ClRosLaunch2::launch()
 {
   cancellationToken_.store(false);
-  // Iniciar el hilo para la ejecución del lanzamiento
-  this->result_ = /*std::async([this]()*/
-                  // {
+  // Start the launch execution thread
+  this->result_ =
     executeRosLaunch(packageName_, launchFileName_, [this]() { return cancellationToken_.load(); });
-  // });
 }
 
 void ClRosLaunch2::stop()
 {
-  // Establecer la bandera de cancelación
+  // Set the cancellation flag
   cancellationToken_.store(true);
 }
 
 std::future<std::string> ClRosLaunch2::executeRosLaunch(
   std::string packageName, std::string launchFileName, std::function<bool()> cancelCondition,
   ClRosLaunch2 * client)
-// std::string ClRosLaunch2::executeRosLaunch(std::string packageName, std::string launchFileName, std::function<bool()> cancelCondition)
 {
   return std::async(
     std::launch::async,
@@ -112,14 +106,13 @@ std::future<std::string> ClRosLaunch2::executeRosLaunch(
         }
         else if (bytesRead == 0)
         {
-          // No se han leído más datos
-          std::this_thread::sleep_for(
-            std::chrono::milliseconds(100));  // Espera antes de intentar nuevamente
+          // No data available yet
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));  // Wait before retrying
         }
         else
         {
-          // Error de lectura
-          RCLCPP_ERROR(rclcpp::get_logger("smacc2"), "Error de lectura en pipe");
+          // Read error
+          RCLCPP_ERROR(rclcpp::get_logger("smacc2"), "Error reading from pipe");
           break;
         }
       }
@@ -158,22 +151,20 @@ std::future<std::string> ClRosLaunch2::executeRosLaunch(
 
       RCLCPP_WARN_STREAM(rclcpp::get_logger("smacc2"), "[ClRosLaunch2] RESULT:\n" << result);
 
-      // Devuelve una std::future con el resultado
-      // return std::async(std::launch::async, [result]() { return result; });
       return result;
     });
 }
 
-/**Aditional functions**/
+/**Additional functions**/
 /////////////////////////////////////////////////////
 
 ProcessInfo runProcess(const char * command)
 {
   ProcessInfo info;
-  info.pid = -1;  // Inicializar el PID a -1 (indicando error)
+  info.pid = -1;  // Initialize PID to -1 (error sentinel)
   info.pipe = nullptr;
 
-  int pipefd[2];  // Descriptor de archivo para el pipe
+  int pipefd[2];  // File descriptors for the pipe
 
   if (pipe(pipefd) == -1)
   {
@@ -185,27 +176,27 @@ ProcessInfo runProcess(const char * command)
 
   if (pid == 0)
   {
-    // Esto se ejecuta en el proceso hijo
-    close(pipefd[0]);                // Cerramos el extremo de lectura del pipe en el proceso hijo
-    dup2(pipefd[1], STDOUT_FILENO);  // Redireccionamos la salida estándar al pipe
-    close(pipefd[1]);                // Cerramos el extremo de escritura del pipe en el proceso hijo
+    // Child process
+    close(pipefd[0]);                // Close read end in child
+    dup2(pipefd[1], STDOUT_FILENO);  // Redirect stdout to pipe
+    close(pipefd[1]);                // Close write end in child
 
-    execl("/bin/sh", "/bin/sh", "-c", command, nullptr);  // Ejecuta el comando dado
+    execl("/bin/sh", "/bin/sh", "-c", command, nullptr);  // Execute the command
 
-    // Si execl retorna, significa que hubo un error
-    std::cerr << "Error al ejecutar el comando: " << command << std::endl;
-    _exit(1);  // Usar _exit para evitar la ejecución de códigos de salida de manejo de errores
+    // execl only returns on error
+    std::cerr << "Error executing command: " << command << std::endl;
+    _exit(1);  // Use _exit to skip at exit handlers
   }
   else if (pid > 0)
   {
-    // Esto se ejecuta en el proceso padre
-    close(pipefd[1]);  // Cerramos el extremo de escritura del pipe en el proceso padre
+    // Parent process
+    close(pipefd[1]);  // Close write end in parent
     info.pid = pid;
-    info.pipe = fdopen(pipefd[0], "r");  // Abrir el descriptor de archivo de lectura en modo texto
+    info.pipe = fdopen(pipefd[0], "r");  // Open read end as text-mode FILE
   }
   else
   {
-    std::cerr << "Error al crear el proceso hijo." << std::endl;
+    std::cerr << "Error creating child process." << std::endl;
   }
 
   return info;
@@ -258,29 +249,3 @@ void killProcessesRecursive(pid_t pid)
 void killGrandchildren(pid_t originalPid) { killProcessesRecursive(originalPid); }
 }  // namespace client_bases
 }  // namespace smacc2
-
-/*=============DOCUMENTATION=================*/
-
-/**************BASH VERSION*******************/
-/*************RECURSIVE KILL******************/
-// #!/bin/bash
-
-// # PID del proceso original (cambia esto al PID que desees)
-// original_pid=1119572
-
-// # Función recursiva para matar a los nietos
-// kill_grandchildren() {
-//   local parent_pid=$1
-//   local children=$(pgrep -P $parent_pid)
-
-//   for child in $children; do
-//     # Matar al hijo (nieto del proceso original)
-//     kill -9 $child
-
-//     # Llamar a la función de manera recursiva para matar a los nietos
-//     kill_grandchildren $child
-//   done
-// }
-
-// # Llamar a la función para matar a los nietos del proceso original
-// kill_grandchildren $original_pid

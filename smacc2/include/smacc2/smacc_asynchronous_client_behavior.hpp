@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,21 +56,18 @@ class SmaccAsyncClientBehavior : public ISmaccClientBehavior
 {
 public:
   template <typename TOrthogonal, typename TSourceObject>
-  void onOrthogonalAllocation();
-
-  template <typename TOrthogonal, typename TSourceObject>
   void onStateOrthogonalAllocation();
 
   virtual ~SmaccAsyncClientBehavior();
 
   template <typename TCallback, typename T>
-  boost::signals2::connection onSuccess(TCallback callback, T * object);
+  smacc2::SmaccSignalConnection onSuccess(TCallback callback, T * object);
 
   template <typename TCallback, typename T>
-  boost::signals2::connection onFinished(TCallback callback, T * object);
+  smacc2::SmaccSignalConnection onFinished(TCallback callback, T * object);
 
   template <typename TCallback, typename T>
-  boost::signals2::connection onFailure(TCallback callback, T * object);
+  smacc2::SmaccSignalConnection onFailure(TCallback callback, T * object);
 
   void requestForceFinish();
 
@@ -92,7 +89,6 @@ protected:
   // All asyncrhonous client behaviors should implement the ability of interrupting the onEntry thread.
   // to avoid blocking the state machine.
 
-  // inline bool isShutdownRequested() { return isShutdownRequested_; }
   bool isShutdownRequested();
 
 private:

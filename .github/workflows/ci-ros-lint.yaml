@@ -5,7 +5,9 @@ on:
 jobs:
   ament_lint:
     name: ament_${{ matrix.linter }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    env:
+      AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: 1
     strategy:
       fail-fast: false
       matrix:
@@ -15,7 +17,7 @@ jobs:
     - uses: ros-tooling/setup-ros@v0.2
     - uses: ros-tooling/action-ros-lint@v0.1
       with:
-        distribution: humble
+        distribution: jazzy
         linter: ${{ matrix.linter }}
         package-name:
           smacc2
@@ -31,7 +33,7 @@ jobs:
           undo_path_global_planner
           cl_nav2z
 
-          multirole_sensor_client
+          cl_generic_sensor
           cl_ros2_timer
 
           eg_conditional_generator
@@ -50,7 +52,6 @@ jobs:
           sm_multi_stage_1
           sm_pack_ml
           sm_panda_cl_moveit2z_cb_inventory
-          sm_panda_moveit2z_cb_inventory
           sm_simple_action_client
           sm_three_some
 

@@ -190,7 +190,6 @@ public:
     postFeedbackEvent = [this](const Feedback & feedback)
     {
       auto actionFeedbackEvent = new EvActionFeedback<Feedback, TOrthogonal>();
-      // actionFeedbackEvent->client = this->owner_;
       actionFeedbackEvent->feedbackMessage = feedback;
       this->postEvent(actionFeedbackEvent);
       RCLCPP_DEBUG(getLogger(), "[%s] FEEDBACK EVENT", this->getName().c_str());
@@ -199,25 +198,25 @@ public:
 
   // Signal connection methods
   template <typename T>
-  boost::signals2::connection onSucceeded(void (T::*callback)(const WrappedResult &), T * object)
+  smacc2::SmaccSignalConnection onSucceeded(void (T::*callback)(const WrappedResult &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onActionSucceeded_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onAborted(void (T::*callback)(const WrappedResult &), T * object)
+  smacc2::SmaccSignalConnection onAborted(void (T::*callback)(const WrappedResult &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onActionAborted_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onCancelled(void (T::*callback)(const WrappedResult &), T * object)
+  smacc2::SmaccSignalConnection onCancelled(void (T::*callback)(const WrappedResult &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onActionCancelled_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onFeedback(void (T::*callback)(const Feedback &), T * object)
+  smacc2::SmaccSignalConnection onFeedback(void (T::*callback)(const Feedback &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onActionFeedback_, callback, object);
   }
@@ -277,9 +276,10 @@ private:
   }
 
   template <typename EvType>
-  void postResultEvent(const WrappedResult & /* result */)
+  void postResultEvent(const WrappedResult & result)
   {
     auto * ev = new EvType();
+    ev->resultMessage = result;
     RCLCPP_INFO(
       getLogger(), "[%s] Posting event: %s", this->getName().c_str(),
       smacc2::demangleSymbol(typeid(ev).name()).c_str());

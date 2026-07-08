@@ -1,3 +1,0 @@
-sm_panda_moveit2z_cb_inventory:
-  ros__parameters:
-    signal_detector_loop_freq: 20.0

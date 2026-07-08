@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -71,6 +71,10 @@ public:
 
   void notifyStateExited(ISmaccState * currentState);
 
+  // Called after state machine ROS initialization is complete (initializeROS)
+  // This signals that orthogonals, clients, and ROS objects are ready
+  void notifyRosInitialized();
+
 private:
   void pollOnce();
 
@@ -91,6 +95,9 @@ private:
   std::atomic<bool> end_;
 
   std::atomic<bool> initialized_;
+
+  // Flag set after initializeROS() completes - indicates ROS objects are ready
+  std::atomic<bool> rosInitialized_;
 
   rclcpp::Publisher<smacc2_msgs::msg::SmaccStatus>::SharedPtr statusPub_;
 

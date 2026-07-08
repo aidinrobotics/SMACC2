@@ -1,5 +1,5 @@
-{
-    "ros.distro": "humble",
+{  
+    "ros.distro": "jazzy",
 
     "files.associations": {
         "cctype": "cpp",
@@ -116,10 +116,10 @@
 
     },
     "python.autoComplete.extraPaths": [
-        "/opt/ros/humble/lib/python3.10/site-packages"
+        "/opt/ros/jazzy/lib/python3.10/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "/opt/ros/humble/lib/python3.10/site-packages"
+        "/opt/ros/jazzy/lib/python3.10/site-packages"
     ],
     "cmake.sourceDirectory": "~/Desktop/workspace/isaac_ros-dev/src/SMACC2/.work/target_ws/build/smacc2_msgs/smacc2_msgs__py",
 

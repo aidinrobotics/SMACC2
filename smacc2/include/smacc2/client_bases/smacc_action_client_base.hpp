@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,13 +38,7 @@ class SmaccActionClientBase : public ISmaccActionClient
 {
 public:
   // Inside this macro you can find the typedefs for Goal and other types
-  // ACTION_DEFINITION(ActionType);
   typedef rclcpp_action::Client<ActionType> ActionClient;
-  // typedef actionlib::SimpleActionClient<ActionType> GoalHandle;
-
-  // typedef typename ActionClient::SimpleDoneCallback SimpleDoneCallback;
-  // typedef typename ActionClient::SimpleActiveCallback SimpleActiveCallback;
-  // typedef typename ActionClient::SimpleFeedbackCallback SimpleFeedbackCallback;
 
   using Goal = typename ActionClient::Goal;
   using Feedback = typename ActionClient::Feedback;
@@ -99,7 +93,6 @@ public:
   }
 
   std::optional<std::shared_future<typename GoalHandle::SharedPtr>> lastRequest_;
-  // typename GoalHandle::SharedPtr goalHandle_;
   std::optional<std::shared_future<typename CancelResponse::SharedPtr>> lastCancelResponse_;
 
   SmaccActionResultSignal onSucceeded_;
@@ -123,15 +116,13 @@ public:
   void postResultEvent(WrappedResult & /*result*/)
   {
     auto * ev = new EvType();
-    // ev->client = this;
-    // ev->resultMessage = *result;
     RCLCPP_INFO(
       getLogger(), "Action client Posting EVENT %s", demangleSymbol(typeid(ev).name()).c_str());
     this->postEvent(ev);
   }
 
   template <typename TOrthogonal, typename TSourceObject>
-  void onOrthogonalAllocation()
+  void onStateOrthogonalAllocation()
   {
     // we create here all the event factory functions capturing the TOrthogonal
     postSuccessEvent = [this](auto msg)
@@ -155,93 +146,44 @@ public:
   }
 
   template <typename T>
-  boost::signals2::connection onSucceeded(void (T::*callback)(WrappedResult &), T * object)
+  smacc2::SmaccSignalConnection onSucceeded(void (T::*callback)(WrappedResult &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onSucceeded_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onSucceeded(std::function<void(WrappedResult &)> callback)
+  smacc2::SmaccSignalConnection onSucceeded(std::function<void(WrappedResult &)> callback)
   {
     return this->getStateMachine()->createSignalConnection(onSucceeded_, callback);
   }
 
   template <typename T>
-  boost::signals2::connection onAborted(void (T::*callback)(WrappedResult &), T * object)
+  smacc2::SmaccSignalConnection onAborted(void (T::*callback)(WrappedResult &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onAborted_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onAborted(std::function<void(WrappedResult &)> callback)
+  smacc2::SmaccSignalConnection onAborted(std::function<void(WrappedResult &)> callback)
   {
     return this->getStateMachine()->createSignalConnection(onAborted_, callback);
   }
 
   template <typename T>
-  boost::signals2::connection onCancelled(void (T::*callback)(WrappedResult &), T * object)
+  smacc2::SmaccSignalConnection onCancelled(void (T::*callback)(WrappedResult &), T * object)
   {
     return this->getStateMachine()->createSignalConnection(onCancelled_, callback, object);
   }
 
   template <typename T>
-  boost::signals2::connection onCancelled(std::function<void(WrappedResult &)> callback)
+  smacc2::SmaccSignalConnection onCancelled(std::function<void(WrappedResult &)> callback)
   {
     return this->getStateMachine()->createSignalConnection(onCancelled_, callback);
   }
 
-  /*
-  template <typename T>
-  boost::signals2::connection onPreempted(void (T::*callback)(WrappedResult &), T *object)
-  {
-      return this->getStateMachine()->createSignalConnection(onPreempted_, callback, object);
-  }
-
-  template <typename T>
-  boost::signals2::connection onPreempted(std::function<void(WrappedResult &)> callback)
-  {
-      return this->getStateMachine()->createSignalConnection(onPreempted_, callback);
-  }
-
-  template <typename T>
-  boost::signals2::connection onRejected(void (T::*callback)(WrappedResult &), T *object)
-  {
-      return this->getStateMachine()->createSignalConnection(onRejected_, callback, object);
-  }
-
-  template <typename T>
-  boost::signals2::connection onRejected(std::function<void(WrappedResult &)> callback)
-  {
-      return this->getStateMachine()->createSignalConnection(onRejected_, callback);
-  }
-  */
-
   virtual bool cancelGoal() override
   {
     lastCancelResponse_ = this->client_->async_cancel_all_goals();
-
-    // if (lastRequest_ && lastRequest_->valid())
-    // {
-
-    //   // rclcpp::spin_until_future_complete(getNode(), *lastRequest_);
-    //   auto req = lastRequest_->get();
-    //   RCLCPP_INFO_STREAM(
-    //     getLogger(), "[" << getName() << "] Cancelling goal. req id: "
-    //                      << rclcpp_action::to_string(req->get_goal_id()));
-    //   auto cancelresult = client_->async_cancel_goal(req);
-
-    //   // wait actively
-    //   // rclcpp::spin_until_future_complete(getNode(), cancelresult);
-    //   //lastRequest_.reset();
-    //   return true;
-    // }
-    // else
-    // {
-    //   RCLCPP_ERROR(
-    //     getLogger(), "%s [at %s]: not connected with actionserver, skipping cancel goal ...",
-    //     getName().c_str(), getNamespace().c_str());
-    //   return false;
-    // }
 
     return true;
   }
@@ -249,45 +191,20 @@ public:
   std::shared_future<typename GoalHandle::SharedPtr> sendGoal(
     Goal & goal, typename SmaccActionResultSignal::WeakPtr resultCallback =
                    typename SmaccActionResultSignal::WeakPtr())
-  //ResultCallback resultCallback = nullptr)  // bug related with the cancel action and the issue
   {
-    // client_->sendGoal(goal, result_cb, active_cb, feedback_cb);
-    // std::shared_future<typename GoalHandle::SharedPtr>
-
     SendGoalOptions options;
 
-    // GoalResponseCallback
-    // options.goal_response_callback;
-
-    /// Function called whenever feedback is received for the goal.
-    // FeedbackCallback
     options.feedback_callback = feedback_cb;
-
-    /// Function called when the result for the goal is received.
-    // ResultCallback result_callback;
-    // options.result_callback = result_cb;
 
     options.result_callback =
       [this, resultCallback](
         const typename rclcpp_action::ClientGoalHandle<ActionType>::WrappedResult & result)
     {
-      // TODO(#1652): a work around until rcl_action interface is updated
-      // if goal ids are not matched, the older goa call this callback so ignore the result
-      // if matched, it must be processed (including aborted)
-
       RCLCPP_INFO_STREAM(
         getLogger(), "[" << getName() << "]  Action result callback, getting shared future");
-      // auto goalHandle = result->get();
-      // goalHandle_ = lastRequest_->get();
       RCLCPP_INFO_STREAM(
         getLogger(), "[" << getName() << "]  Action client Result goal id: "
                          << rclcpp_action::to_string(result.goal_id));
-
-      // if (goalHandle_->get_goal_id() == result.goal_id)
-      // {
-      //   // goal_result_available_ = true;
-      //   // result_ = result;
-      //   RCLCPP_INFO_STREAM(getLogger(), "[" << getName() << "]  Result CB Goal id matches with last request");
 
       auto resultCallbackPtr = resultCallback.lock();
 
@@ -304,24 +221,7 @@ public:
           getLogger(), "[" << getName() << "]  Result CB calling default callback");
         this->onResult(result);
       }
-
-      // }
-      // else
-      // {
-      //   RCLCPP_ERROR_STREAM(getLogger(), "[" << getName() << "]  Result CB Goal id DOES NOT match with last request. Skipping, incorrect behavior.");
-      // }
     };
-
-    // if (lastRequest_ && lastRequest_->valid())
-    // {
-    //   RCLCPP_INFO_STREAM(getLogger(), getName() << ": checking previous request is really finished.");
-    //   auto res = this->lastRequest_->get();
-    //   RCLCPP_INFO_STREAM(getLogger(), getName() << ": okay");
-    // }
-    // else
-    // {
-    //   RCLCPP_INFO_STREAM(getLogger(), getName() << ": no previous request.");
-    // }
 
     RCLCPP_INFO_STREAM(
       getLogger(), "[" << getName() << "] client ready clients: "
@@ -334,44 +234,7 @@ public:
     auto lastRequest = this->client_->async_send_goal(goal, options);
     this->lastRequest_ = lastRequest;
 
-    RCLCPP_INFO_STREAM(
-      getLogger(), "[" << getName() << "] Action request "
-      // << rclcpp_action::to_string(this->goalHandle_->get_goal_id()) <<". Goal sent to " << this->action_endpoint_
-      // << "\": " << std::endl
-      // << goal
-    );
-
-    // if (client_->isServerConnected())
-    // {
-    // RCLCPP_INFO_STREAM(getLogger(), getName() << ": Goal sent:" << goal);
-
-    // RCLCPP_INFO_STREAM(getLogger(), getName() << ": Goal Id: "  <<
-    // rclcpp_action::to_string(lastRequest_->get()->get_goal_id()));
-
-    // for (auto& gh: this->goal_handles_)
-    // {
-
-    // }
-
-    // RCLCPP_INFO_STREAM(getLogger(), getName() << ": spinning until completed");
-    // if (rclcpp::spin_until_future_complete(this->getNode(), lastRequest_, std::chrono::seconds(2))
-    // !=rclcpp::executor::FutureReturnCode::SUCCESS)
-    // {
-    //   throw std::runtime_error("send_goal failed");
-    // }
-
-    // goalHandle_ = lastRequest_->get();
-    // if (!goalHandle_) {
-    //   throw std::runtime_error("Goal was rejected by the action server");
-    // }
-
-    // }
-    // else
-    // {
-    //     RCLCPP_ERROR(getLogger(),"%s [at %s]: not connected with actionserver, skipping goal request
-    //     ...", getName().c_str(), getNamespace().c_str());
-    //     //client_->waitForServer();
-    // }
+    RCLCPP_INFO_STREAM(getLogger(), "[" << getName() << "] Action request");
 
     return lastRequest;
   }
@@ -388,11 +251,6 @@ protected:
 
   void onResult(const WrappedResult & result_msg)
   {
-    // auto *actionResultEvent = new EvActionResult<TDerived>();
-    // actionResultEvent->client = this;
-    // actionResultEvent->resultMessage = *result_msg;
-
-    // const auto &resultType = this->getState();
     const auto & resultType = result_msg.code;
 
     RCLCPP_INFO_STREAM(
@@ -417,19 +275,6 @@ protected:
       onCancelled_(result_msg);
       postCancelledEvent(result_msg);
     }
-    /*
-    else if (resultType == actionlib::SimpleClientGoalState::REJECTED)
-    {
-        RCLCPP_INFO(getLogger(),"[%s] request result: Rejected", this->getName().c_str());
-        onRejected_(result_msg);
-        postRejectedEvent(result_msg);
-    }
-    else if (resultType == actionlib::SimpleClientGoalState::PREEMPTED)
-    {
-        RCLCPP_INFO(getLogger(),"[%s] request result: Preempted", this->getName().c_str());
-        onPreempted_(result_msg);
-        postPreemptedEvent(result_msg);
-    }*/
     else
     {
       RCLCPP_INFO(

@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,14 +86,13 @@ public:
 
   std::shared_future<std::shared_ptr<typename ServiceType::Response>> resultFuture_;
 
-  typename std::shared_ptr<typename ServiceType::Response> result_;
-  std::chrono::milliseconds pollRate_;
-
 protected:
   //rclcpp::NodeHandle nh_;
   std::shared_ptr<rclcpp::Client<ServiceType>> client_;
   std::string serviceName_;
   std::shared_ptr<typename ServiceType::Request> request_;
+  typename std::shared_ptr<typename ServiceType::Response> result_;
+  std::chrono::milliseconds pollRate_;
 
   virtual void onServiceResponse(std::shared_ptr<typename ServiceType::Response> /*result*/)
   {

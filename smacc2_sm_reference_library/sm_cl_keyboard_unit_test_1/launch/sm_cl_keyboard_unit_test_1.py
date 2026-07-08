@@ -1,4 +1,4 @@
-# Copyright 2021 RobosoftAI Inc.
+# Copyright 2025 Robosoft Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ def generate_launch_description():
                 package="sm_cl_keyboard_unit_test_1",
                 executable="sm_cl_keyboard_unit_test_1_node",
                 output="screen",
+                arguments=["--ros-args", "--log-level", "INFO"],
             ),
             Node(
                 package="cl_keyboard",
                 executable="keyboard_server_node.py",
-                name="cl_keyboard",
+                name="keyboard_server_node",
                 output="screen",
-                prefix="xterm -hold -e",
+                prefix="konsole --hold -p tabtitle='Keyboard Server' -e",
                 arguments=["--ros-args", "--log-level", "INFO"],
             ),
         ]

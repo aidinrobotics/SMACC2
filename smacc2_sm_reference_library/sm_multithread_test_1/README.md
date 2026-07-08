@@ -1,4 +1,6 @@
 # sm_multithread_test_1 - SMACC2 Multi-threaded Executor Demonstration
+ 
+ ![sm_multithread_test_1](docs/SmMultithreadTest1_2025-12-21_213820.svg)
 
 **A reference implementation demonstrating SMACC2's multi-threaded executor capability.**
 
@@ -46,14 +48,14 @@ colcon build --packages-select sm_multithread_test_1
 source install/setup.bash
 
 # Launch multi-threaded version
-ros2 launch sm_multithread_test_1 sm_multithread_test_1.launch.py
+ros2 launch sm_multithread_test_1 sm_multithread_test_1.py
 ```
 
 ### Run Single-threaded Version (For Comparison)
 
 ```bash
 # Launch single-threaded version
-ros2 launch sm_multithread_test_1 sm_multithread_test_1_single.launch.py
+ros2 launch sm_multithread_test_1 sm_multithread_test_1_single.py
 ```
 
 The state machine runs for **15 seconds** then enters a terminal state. Press `Ctrl+C` to exit.
@@ -345,7 +347,7 @@ class CbTimerWithWorkSimulation : public smacc2::SmaccClientBehavior
 
 ### Prerequisites
 
-- ROS 2 (Humble or later)
+- ROS 2 (jazzy or later)
 - SMACC2 framework installed
 - `cl_ros2_timer` client library
 
@@ -366,10 +368,10 @@ source install/setup.bash
 
 ```bash
 # Multi-threaded version (main demonstration)
-ros2 launch sm_multithread_test_1 sm_multithread_test_1.launch.py
+ros2 launch sm_multithread_test_1 sm_multithread_test_1.py
 
 # Single-threaded version (for comparison)
-ros2 launch sm_multithread_test_1 sm_multithread_test_1_single.launch.py
+ros2 launch sm_multithread_test_1 sm_multithread_test_1_single.py
 ```
 
 ---
@@ -409,8 +411,8 @@ If you see "single-threaded mode", you launched the wrong variant.
 - [GitHub Issue #571](https://github.com/robosoft-ai/SMACC2/issues/571) - Original request for multithread executor documentation
 
 ### ROS 2 Documentation
-- [ROS 2 Executors](https://docs.ros.org/en/humble/Concepts/About-Executors.html)
-- [MultiThreadedExecutor API](https://docs.ros.org/en/humble/p/rclcpp/generated/classrclcpp_1_1executors_1_1MultiThreadedExecutor.html)
+- [ROS 2 Executors](https://docs.ros.org/en/jazzy/Concepts/About-Executors.html)
+- [MultiThreadedExecutor API](https://docs.ros.org/en/jazzy/p/rclcpp/generated/classrclcpp_1_1executors_1_1MultiThreadedExecutor.html)
 
 ### Code Files
 - `sm_multithread_test_1_node.cpp` - Multi-threaded entry point

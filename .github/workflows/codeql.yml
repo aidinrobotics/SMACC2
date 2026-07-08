@@ -1,0 +1,130 @@
+name: CodeQL
+
+on:
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: CodeQL Analysis (C++)
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
+
+      - name: Install dependencies
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          sudo rosdep init || true
+          rosdep update
+          rosdep install --from-paths . --ignore-src -r -y
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          queries: security-and-quality
+
+      - name: Build
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build \
+            --packages-select \
+              smacc2 \
+              smacc2_msgs \
+              cl_keyboard \
+              cl_ros2_timer \
+              cl_generic_sensor \
+              cl_nav2z \
+              backward_global_planner \
+              backward_local_planner \
+              forward_global_planner \
+              forward_local_planner \
+              nav2z_planners_common \
+              pure_spinning_local_planner \
+              undo_path_global_planner \
+            --cmake-args -DBUILD_TESTING=OFF
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:c-cpp
+          output: sarif-results
+          upload: false
+
+      - name: Filter generated paths from SARIF
+        run: |
+          python3 - <<'EOF'
+          import json, glob, re
+          SUPPRESSED_RULES = {
+              'cpp/empty-block',
+              'cpp/sizeof-side-effect',
+          }
+          def is_rclcpp_comment(result):
+              """Return True if every flagged location is a commented-out RCLCPP_ call.
+              Falls back to reading the source file when SARIF snippet.text is absent."""
+              locs = result.get('locations', [])
+              if not locs:
+                  return False
+              for loc in locs:
+                  phys = loc.get('physicalLocation', {})
+                  region = phys.get('region', {})
+                  snippet = region.get('snippet', {}).get('text', '')
+                  if not snippet:
+                      uri = phys.get('artifactLocation', {}).get('uri', '')
+                      start_line = region.get('startLine', 0)
+                      if uri and start_line:
+                          try:
+                              with open(uri) as src:
+                                  lines = src.readlines()
+                              snippet = lines[start_line - 1] if start_line <= len(lines) else ''
+                          except (IOError, OSError):
+                              return False
+                  if not re.search(r'//\s*RCLCPP_', snippet):
+                      return False
+              return True
+          def is_smacc_tracing_header_guard(result):
+              """Suppress header-guard warnings for smacc_tracing files.
+              trace_provider.hpp uses the lttng multi-include pattern which
+              is intentionally incompatible with #pragma once."""
+              if 'header' not in result.get('ruleId', '').lower():
+                  return False
+              return any(
+                  'smacc_tracing' in loc.get('physicalLocation', {})
+                                        .get('artifactLocation', {})
+                                        .get('uri', '')
+                  for loc in result.get('locations', [])
+              )
+          for path in glob.glob('sarif-results/*.sarif'):
+              with open(path) as f:
+                  sarif = json.load(f)
+              for run in sarif.get('runs', []):
+                  results = run.get('results', [])
+                  run['results'] = [
+                      r for r in results
+                      if r.get('ruleId', '') not in SUPPRESSED_RULES
+                      and not is_rclcpp_comment(r)
+                      and not is_smacc_tracing_header_guard(r)
+                      and not any(
+                          loc.get('physicalLocation', {})
+                             .get('artifactLocation', {})
+                             .get('uri', '')
+                             .startswith(('build/', 'install/'))
+                          for loc in r.get('locations', [])
+                      )
+                  ]
+              with open(path, 'w') as f:
+                  json.dump(sarif, f)
+          EOF
+
+      - name: Upload filtered results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif-results
+          category: /language:c-cpp

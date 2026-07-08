@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public:
 
   {
     // We start by creating a topic subscriber component from SMACC2s client core components.
-    // We use this to gain the topic funcionality interated with SMACC and the ability to post smacc events for transitions.
+    // We use this to gain the topic functionality integrated with SMACC and the ability to post smacc events for transitions.
     // We are using it to handle the reception of ros topic messages and to notify the other components in the client.
     this->createComponent<
       smacc2::client_core_components::CpTopicSubscriber<std_msgs::msg::UInt16>, TOrthogonal,

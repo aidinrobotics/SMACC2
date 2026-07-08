@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,14 +24,9 @@
 
 namespace smacc2
 {
-template <typename TOrthogonal, typename TSourceObject>
-void SmaccAsyncClientBehavior::onStateOrthogonalAllocation()
-{
-  this->onOrthogonalAllocation<TOrthogonal, TSourceObject>();
-}
 
 template <typename TOrthogonal, typename TSourceObject>
-void SmaccAsyncClientBehavior::onOrthogonalAllocation()
+void SmaccAsyncClientBehavior::onStateOrthogonalAllocation()
 {
   if (postFinishEventFn_ || postSuccessEventFn_ || postFailureEventFn_)
   {
@@ -39,7 +34,7 @@ void SmaccAsyncClientBehavior::onOrthogonalAllocation()
       getLogger(),
       "SmaccAsyncClientBehavior already has event posting functions assigned. Skipping "
       "re-assignment. This could be a problem if you are using the same behavior in multiple "
-      "states. This may be related with the deprecation of onOrthogonalAllocation in favor of "
+      "states. This may be related with the deprecation of onStateOrthogonalAllocation in favor of "
       "onStateOrthogonalAllocation.");
 
     return;
@@ -65,21 +60,21 @@ void SmaccAsyncClientBehavior::onOrthogonalAllocation()
 }
 
 template <typename TCallbackMethod, typename T>
-boost::signals2::connection SmaccAsyncClientBehavior::onSuccess(
+smacc2::SmaccSignalConnection SmaccAsyncClientBehavior::onSuccess(
   TCallbackMethod callback, T * object)
 {
   return this->getStateMachine()->createSignalConnection(onSuccess_, callback, object);
 }
 
 template <typename TCallbackMethod, typename T>
-boost::signals2::connection SmaccAsyncClientBehavior::onFinished(
+smacc2::SmaccSignalConnection SmaccAsyncClientBehavior::onFinished(
   TCallbackMethod callback, T * object)
 {
   return this->getStateMachine()->createSignalConnection(onFinished_, callback, object);
 }
 
 template <typename TCallbackMethod, typename T>
-boost::signals2::connection SmaccAsyncClientBehavior::onFailure(
+smacc2::SmaccSignalConnection SmaccAsyncClientBehavior::onFailure(
   TCallbackMethod callback, T * object)
 {
   return this->getStateMachine()->createSignalConnection(onFailure_, callback, object);

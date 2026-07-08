@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 namespace sm_atomic_lifecycle
 {
 using sm_atomic_lifecycle::OrLifecycleNode;
-using namespace cl_lifecyclenode;
+using namespace cl_lifecycle_node;
 
 // STATE DECLARATION
 struct StActivating : smacc2::SmaccState<StActivating, SmAtomicLifecycle>
@@ -32,9 +32,9 @@ struct StActivating : smacc2::SmaccState<StActivating, SmAtomicLifecycle>
 
   // TRANSITION TABLE
   typedef mpl::list<
-          Transition<EvTransitionOnActivateSuccess<ClLifecycleNode, OrLifecycleNode>, StActive, SUCCESS>,
-          Transition<EvTransitionOnActivateFailure<ClLifecycleNode, OrLifecycleNode>, StInactive, ABORT>,
-          Transition<EvTransitionOnActivateError<ClLifecycleNode, OrLifecycleNode>, StErrorProcessing, ABORT>
+          Transition<EvTransitionOnActivateSuccess<CpLifecycleEventMonitor, OrLifecycleNode>, StActive, SUCCESS>,
+          Transition<EvTransitionOnActivateFailure<CpLifecycleEventMonitor, OrLifecycleNode>, StInactive, ABORT>,
+          Transition<EvTransitionOnActivateError<CpLifecycleEventMonitor, OrLifecycleNode>, StErrorProcessing, ABORT>
       >
       reactions;
 

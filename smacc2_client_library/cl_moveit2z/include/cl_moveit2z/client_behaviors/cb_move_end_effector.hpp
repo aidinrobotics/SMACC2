@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <cl_moveit2z/cl_moveit2z.hpp>
 #include <cl_moveit2z/common.hpp>
 #include <cl_moveit2z/components/cp_motion_planner.hpp>
+#include <cl_moveit2z/components/cp_move_group_interface.hpp>
 #include <cl_moveit2z/components/cp_trajectory_executor.hpp>
 #include <future>
 #include <smacc2/smacc_asynchronous_client_behavior.hpp>
@@ -50,7 +51,7 @@ public:
 
   virtual void onEntry() override
   {
-    this->requiresClient(movegroupClient_);
+    this->requiresComponent(cpMoveGroup_);
 
     if (this->group_)
     {
@@ -65,7 +66,7 @@ public:
     {
       RCLCPP_DEBUG(
         getLogger(), "[CbMoveEndEfector] new thread started to move absolute end effector");
-      this->moveToAbsolutePose(*(movegroupClient_->moveGroupClientInterface), targetPose);
+      this->moveToAbsolutePose(*(cpMoveGroup_->moveGroupClientInterface), targetPose);
       RCLCPP_DEBUG(
         getLogger(), "[CbMoveEndEfector] to move absolute end effector thread destroyed");
     }
@@ -81,7 +82,8 @@ protected:
 
     // Try to use CpMotionPlanner component (preferred)
     CpMotionPlanner * motionPlanner = nullptr;
-    this->requiresComponent(motionPlanner, false);  // Optional component
+    this->requiresComponent(
+      motionPlanner, smacc2::ComponentRequirement::SOFT);  // Optional component
 
     bool success = false;
     moveit::planning_interface::MoveGroupInterface::Plan computedMotionPlan;
@@ -143,7 +145,8 @@ protected:
     {
       // Try to use CpTrajectoryExecutor component (preferred)
       CpTrajectoryExecutor * trajectoryExecutor = nullptr;
-      this->requiresComponent(trajectoryExecutor, false);  // Optional component
+      this->requiresComponent(
+        trajectoryExecutor, smacc2::ComponentRequirement::SOFT);  // Optional component
 
       bool executionSuccess = false;
 
@@ -191,19 +194,19 @@ protected:
       // Post events
       if (executionSuccess)
       {
-        movegroupClient_->postEventMotionExecutionSucceded();
+        cpMoveGroup_->postEventMotionExecutionSucceeded();
         this->postSuccessEvent();
       }
       else
       {
-        movegroupClient_->postEventMotionExecutionFailed();
+        cpMoveGroup_->postEventMotionExecutionFailed();
         this->postFailureEvent();
       }
     }
     else
     {
       RCLCPP_INFO(getLogger(), "[CbMoveEndEffector] planning failed, skipping execution");
-      movegroupClient_->postEventMotionExecutionFailed();
+      cpMoveGroup_->postEventMotionExecutionFailed();
       this->postFailureEvent();
     }
 
@@ -213,6 +216,6 @@ protected:
     return success;
   }
 
-  ClMoveit2z * movegroupClient_;
+  CpMoveGroupInterface * cpMoveGroup_ = nullptr;
 };
 }  // namespace cl_moveit2z

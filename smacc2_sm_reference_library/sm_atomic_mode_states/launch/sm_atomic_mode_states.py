@@ -1,4 +1,4 @@
-# Copyright 2021 RobosoftAI Inc.
+# Copyright 2025 Robosoft Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ def generate_launch_description():
                 package="sm_atomic_mode_states",
                 executable="sm_atomic_mode_states_node",
                 output="screen",
+                arguments=["--ros-args", "--log-level", "INFO"],
             )
         ]
     )

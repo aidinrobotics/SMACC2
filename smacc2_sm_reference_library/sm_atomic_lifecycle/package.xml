@@ -2,16 +2,16 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>sm_atomic_lifecycle</name>
-  <version>2.3.20</version>
+  <version>3.1.0</version>
   <description>The sm_atomic_lifecycle package</description>
-  <maintainer email="pablo@ibrobotics.com">Pablo Inigo Blasco</maintainer>
+  <maintainer email="brett@robosoft.ai">Brett Aldrich</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>ament_cmake_auto</depend>
   <depend>cl_ros2_timer</depend>
-  <depend>lifecyclenode_client</depend>
+  <depend>cl_lifecycle_node</depend>
   <depend>smacc2</depend>
   <depend>std_msgs</depend>
 

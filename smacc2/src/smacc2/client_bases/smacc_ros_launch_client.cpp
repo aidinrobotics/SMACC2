@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,7 +54,12 @@ std::future<std::string> ClRosLaunch::executeRosLaunch(
 
       std::array<char, 128> buffer;
       std::string result;
-      std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.str().c_str(), "r"), pclose);
+      auto pipe_deleter = [](FILE * fp)
+      {
+        if (fp) pclose(fp);
+      };
+      std::unique_ptr<FILE, decltype(pipe_deleter)> pipe(
+        popen(cmd.str().c_str(), "r"), pipe_deleter);
       if (!pipe)
       {
         throw std::runtime_error("popen() failed!");

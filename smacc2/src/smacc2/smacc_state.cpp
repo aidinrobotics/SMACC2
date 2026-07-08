@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ std::string ISmaccState::getClassName() { return demangleSymbol(typeid(*this).na
 
 void ISmaccState::notifyTransitionFromTransitionTypeInfo(TypeInfo::Ptr & transitionType)
 {
-  RCLCPP_INFO_STREAM(getLogger(), "TRANSITION RULE TRIGGERED: " << transitionType->getFullName());
+  RCLCPP_DEBUG_STREAM(getLogger(), "TRANSITION RULE TRIGGERED: " << transitionType->getFullName());
 
-  //auto currstateinfo = this->getStateMachine().getCurrentStateInfo();
   auto currstateinfo = this->stateInfo_;
 
   if (currstateinfo != nullptr)

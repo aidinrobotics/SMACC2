@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,12 +42,6 @@ public:
   void requiresClient(SmaccClientType *& storage);
 
   template <typename SmaccComponentType>
-  [[deprecated(
-    "Use requiresClient with the ComponentRequirement argument. This method will be removed in "
-    "future versions.")]] void
-  requiresComponent(SmaccComponentType *& storage, bool throwExceptionIfNotExist);
-
-  template <typename SmaccComponentType>
   void requiresComponent(
     SmaccComponentType *& storage,
     ComponentRequirement requirementType = ComponentRequirement::SOFT);
@@ -80,13 +74,6 @@ protected:
   virtual rclcpp::Logger getLogger() const;
 
 private:
-  template <typename TOrthogonal, typename TSourceObject>
-  [[deprecated(
-    "Use onStateOrthogonalAllocation instead. onOrthogonalAllocation will be removed in future "
-    "versions.")]] void
-  onOrthogonalAllocation();
-
-  // New method: called when the client behavior is allocated to a state (replaces onOrthogonalAllocation)
   template <typename TOrthogonal, typename TSourceObject>
   void onStateOrthogonalAllocation();
 

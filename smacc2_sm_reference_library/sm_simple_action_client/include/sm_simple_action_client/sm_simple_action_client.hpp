@@ -1,5 +1,5 @@
 // Copyright 2021 MyName/MyCompany Inc.
-// Copyright 2021 RobosoftAI Inc. (template)
+// Copyright 2025 Robosoft Inc. (template)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ namespace robot_state_machine
 //STATES
 struct StState1;
 struct StState2;
+struct StState3;
 
 //--------------------------------------------------------------------
 //STATE_MACHINE
@@ -56,3 +57,4 @@ struct SmSimpleActionClient : public smacc2::SmaccStateMachineBase<SmSimpleActio
 //STATES
 #include "states/st_state_1.hpp"
 #include "states/st_state_2.hpp"
+#include "states/st_state_3.hpp"

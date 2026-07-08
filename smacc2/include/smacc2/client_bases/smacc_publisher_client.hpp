@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,7 +69,6 @@ public:
   template <typename MessageType>
   void publish(const MessageType & msg)
   {
-    //pub_->publish(msg);
     std::dynamic_pointer_cast<rclcpp::Publisher<MessageType>>(pub_)->publish(msg);
   }
 

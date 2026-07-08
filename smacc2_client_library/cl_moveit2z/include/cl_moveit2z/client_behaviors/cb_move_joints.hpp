@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 
 #include <cl_moveit2z/cl_moveit2z.hpp>
 #include <cl_moveit2z/components/cp_motion_planner.hpp>
+#include <cl_moveit2z/components/cp_move_group_interface.hpp>
 #include <cl_moveit2z/components/cp_trajectory_executor.hpp>
 #include <smacc2/smacc_asynchronous_client_behavior.hpp>
 
@@ -49,7 +50,7 @@ public:
 
   virtual void onEntry() override
   {
-    this->requiresClient(movegroupClient_);
+    this->requiresComponent(cpMoveGroup_);
 
     if (this->group_)
     {
@@ -59,7 +60,7 @@ public:
     }
     else
     {
-      this->moveJoints(*movegroupClient_->moveGroupClientInterface);
+      this->moveJoints(*cpMoveGroup_->moveGroupClientInterface);
     }
   }
 
@@ -94,14 +95,15 @@ protected:
     if (jointValueTarget_.size() == 0)
     {
       RCLCPP_WARN(getLogger(), "[CbMoveJoints] No joint value specified. Skipping planning call.");
-      movegroupClient_->postEventMotionExecutionFailed();
+      cpMoveGroup_->postEventMotionExecutionFailed();
       this->postFailureEvent();
       return;
     }
 
     // Try to use CpMotionPlanner component (preferred)
     CpMotionPlanner * motionPlanner = nullptr;
-    this->requiresComponent(motionPlanner, false);  // Optional component
+    this->requiresComponent(
+      motionPlanner, smacc2::ComponentRequirement::SOFT);  // Optional component
 
     bool success = false;
     moveit::planning_interface::MoveGroupInterface::Plan computedMotionPlan;
@@ -158,7 +160,8 @@ protected:
     {
       // Try to use CpTrajectoryExecutor component (preferred)
       CpTrajectoryExecutor * trajectoryExecutor = nullptr;
-      this->requiresComponent(trajectoryExecutor, false);  // Optional component
+      this->requiresComponent(
+        trajectoryExecutor, smacc2::ComponentRequirement::SOFT);  // Optional component
 
       bool executionSuccess = false;
 
@@ -211,14 +214,14 @@ protected:
         RCLCPP_INFO_STREAM(
           getLogger(),
           "[" << this->getName() << "] motion execution succeeded. Throwing success event.");
-        movegroupClient_->postEventMotionExecutionSucceded();
+        cpMoveGroup_->postEventMotionExecutionSucceeded();
         this->postSuccessEvent();
       }
       else
       {
         RCLCPP_WARN_STREAM(
           getLogger(), "[" << this->getName() << "] motion execution failed. Throwing fail event.");
-        movegroupClient_->postEventMotionExecutionFailed();
+        cpMoveGroup_->postEventMotionExecutionFailed();
         this->postFailureEvent();
       }
     }
@@ -229,11 +232,11 @@ protected:
         getLogger(), "[" << this->getName() << "] planning failed. Throwing fail event."
                          << std::endl
                          << statestr);
-      movegroupClient_->postEventMotionExecutionFailed();
+      cpMoveGroup_->postEventMotionExecutionFailed();
       this->postFailureEvent();
     }
   }
 
-  ClMoveit2z * movegroupClient_;
+  CpMoveGroupInterface * cpMoveGroup_ = nullptr;
 };
 }  // namespace cl_moveit2z

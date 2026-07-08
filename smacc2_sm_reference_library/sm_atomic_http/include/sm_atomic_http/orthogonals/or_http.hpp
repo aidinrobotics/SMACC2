@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
 
 #pragma once
 
-#include <http_client/cl_http_client.hpp>
+#include <cl_http/cl_http.hpp>
 #include <smacc2/smacc.hpp>
 
 namespace sm_atomic_http {
 class OrHttp : public smacc2::Orthogonal<OrHttp> {
  public:
   void onInitialize() override {
-    auto http_client =
+    auto cl_http =
         this->createClient<cl_http::ClHttp>(
             "https://example.com");
   }

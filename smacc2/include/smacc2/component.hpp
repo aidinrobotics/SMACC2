@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,33 +52,9 @@ protected:
   void postEvent();
 
   template <typename TOrthogonal, typename TSourceObject>
-  [[deprecated(
-    "Use onStateOrthogonalAllocation instead. onOrthogonalAllocation will be removed in future "
-    "versions.")]] void
-  onOrthogonalAllocation()
-  {
-  }
-
-  // New method: called when the component is allocated to a state (replaces onOrthogonalAllocation)
-  template <typename TOrthogonal, typename TSourceObject>
   void onStateOrthogonalAllocation()
   {
   }
-
-  template <typename TComponent>
-  [[deprecated(
-    "Use requiresComponent with ComponentRequirement argument instead. This method will be removed "
-    "in future "
-    "versions.")]] void
-  requiresComponent(TComponent *& requiredComponentStorage, bool throwExceptionIfNotExist);
-
-  template <typename TComponent>
-  [[deprecated(
-    "Use requiresComponent with ComponentRequirement argument instead. This method will be removed "
-    "in future "
-    "versions.")]] void
-  requiresComponent(
-    std::string name, TComponent *& requiredComponentStorage, bool throwExceptionIfNotExist);
 
   template <typename TComponent>
   void requiresComponent(

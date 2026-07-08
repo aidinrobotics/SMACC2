@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,8 @@
 
 namespace cl_ros2_timer
 {
-ClRos2Timer::ClRos2Timer(rclcpp::Duration duration, bool oneshot)
-: duration_(duration), oneshot_(oneshot)
-{
-}
+ClRos2Timer::ClRos2Timer() {}
 
-ClRos2Timer::~ClRos2Timer()
-{
-  // Components are automatically cleaned up by the framework
-}
+ClRos2Timer::~ClRos2Timer() {}
 
 }  // namespace cl_ros2_timer

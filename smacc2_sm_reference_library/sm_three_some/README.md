@@ -8,7 +8,7 @@
 
 First, source your ros2 installation.
 ```
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 ```
 
 Before you build, make sure you've installed all the dependencies...
@@ -23,17 +23,16 @@ Then build with colcon build...
 colcon build
 ```
 <h2>Operating Instructions</h2>
-After you build, remember to source the proper install folder...
+After you build, remember to source the workspace...
 
 ```
-source ~/workspace/humble_ws/install/setup.sh
+source install/setup.bash
 ```
 
 And then run the launch file...
-! refactor state machine name
 
 ```
-ros2 launch sm_three_some sm_three_some.launch
+ros2 launch sm_three_some sm_three_some.py
 ```
 
  <h2>Viewer Instructions</h2>

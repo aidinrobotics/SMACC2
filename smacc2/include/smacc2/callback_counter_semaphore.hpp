@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
  ******************************************************************************************************************/
 
 #pragma once
-#include <boost/signals2.hpp>
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
 #include <rclcpp/rclcpp.hpp>
+#include <smacc2/smacc_signal.hpp>
 #include <thread>
 
 namespace smacc2
@@ -38,13 +38,13 @@ public:
 
   void finalize();
 
-  void addConnection(boost::signals2::connection conn);
+  void addConnection(smacc2::SmaccSignalConnection conn);
 
 private:
   int count_;
   std::mutex mutex_;
   std::condition_variable cv_;
-  std::vector<boost::signals2::connection> connections_;
+  std::vector<smacc2::SmaccSignalConnection> connections_;
   bool finalized = false;
   std::string name_;
 };

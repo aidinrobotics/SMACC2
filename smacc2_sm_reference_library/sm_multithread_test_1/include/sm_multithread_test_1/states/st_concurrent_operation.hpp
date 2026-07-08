@@ -53,19 +53,19 @@ struct StConcurrentOperation : smacc2::SmaccState<StConcurrentOperation, SmMulti
   static void staticConfigure()
   {
     // Configure Timer A: Fast (100ms period), light work (50ms)
-    configure_orthogonal<OrTimerA, CbTimerWithWorkSimulation>("A", 50ms);
+    configure_orthogonal<OrTimerA, CbTimerWithWorkSimulation>("A", 100ms, 50ms);
 
     // Configure Timer B: Medium (250ms period), medium work (100ms)
-    configure_orthogonal<OrTimerB, CbTimerWithWorkSimulation>("B", 100ms);
+    configure_orthogonal<OrTimerB, CbTimerWithWorkSimulation>("B", 250ms, 100ms);
 
     // Configure Timer C: Slow (500ms period), heavy work (150ms)
-    configure_orthogonal<OrTimerC, CbTimerWithWorkSimulation>("C", 150ms);
+    configure_orthogonal<OrTimerC, CbTimerWithWorkSimulation>("C", 500ms, 150ms);
 
     // Configure Timer D: Very slow (1000ms period), very heavy work (200ms)
-    configure_orthogonal<OrTimerD, CbTimerWithWorkSimulation>("D", 200ms);
+    configure_orthogonal<OrTimerD, CbTimerWithWorkSimulation>("D", 1000ms, 200ms);
 
     // Also configure Timer D with countdown to trigger state exit after 120 seconds
-    configure_orthogonal<OrTimerD, CbTimerCountdownOnce>(120);
+    configure_orthogonal<OrTimerD, CbTimerCountdownOnce>(120s);
   }
 
   void runtimeConfigure()
@@ -75,32 +75,32 @@ struct StConcurrentOperation : smacc2::SmaccState<StConcurrentOperation, SmMulti
 
   void onEntry()
   {
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
     RCLCPP_INFO(getLogger(), "╔════════════════════════════════════════════════════════════════╗");
     RCLCPP_INFO(getLogger(), "║      CONCURRENT OPERATION STATE - Multi-threaded Demo         ║");
     RCLCPP_INFO(getLogger(), "╚════════════════════════════════════════════════════════════════╝");
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
     RCLCPP_INFO(getLogger(), "Running 4 concurrent timers for 15 seconds...");
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
     RCLCPP_INFO(getLogger(), "  Timer A: 100ms period,  50ms work (fast, light)");
     RCLCPP_INFO(getLogger(), "  Timer B: 250ms period, 100ms work (medium, medium)");
     RCLCPP_INFO(getLogger(), "  Timer C: 500ms period, 150ms work (slow, heavy)");
     RCLCPP_INFO(getLogger(), "  Timer D: 1000ms period, 200ms work (very slow, very heavy)");
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
     RCLCPP_INFO(getLogger(), "👀 Watch for:");
     RCLCPP_INFO(getLogger(), "   • Different thread IDs (multi-threaded mode)");
     RCLCPP_INFO(getLogger(), "   • Overlapping START/END timestamps (concurrency!)");
     RCLCPP_INFO(getLogger(), "   • Same thread ID = single-threaded mode");
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
   }
 
   void onExit()
   {
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
     RCLCPP_INFO(getLogger(), "╔════════════════════════════════════════════════════════════════╗");
     RCLCPP_INFO(getLogger(), "║      DEMONSTRATION COMPLETE - Check Logs Above!               ║");
     RCLCPP_INFO(getLogger(), "╚════════════════════════════════════════════════════════════════╝");
-    RCLCPP_INFO(getLogger(), "");
+    RCLCPP_INFO(getLogger(), " ");
   }
 };
 

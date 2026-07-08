@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 namespace sm_atomic_lifecycle
 {
 using sm_atomic_lifecycle::OrLifecycleNode;
-using namespace cl_lifecyclenode;
+using namespace cl_lifecycle_node;
 
 // STATE DECLARATION
 struct StActive : smacc2::SmaccState<StActive, SmAtomicLifecycle>
@@ -32,8 +32,8 @@ struct StActive : smacc2::SmaccState<StActive, SmAtomicLifecycle>
 
   // TRANSITION TABLE
   typedef mpl::list<
-          Transition<EvTransitionDeactivate<ClLifecycleNode, OrLifecycleNode>, StDeactivating, SUCCESS>,
-          Transition<EvTransitionActiveShutdown<ClLifecycleNode, OrLifecycleNode>, StShuttingDown, SUCCESS>
+          Transition<EvTransitionDeactivate<CpLifecycleEventMonitor, OrLifecycleNode>, StDeactivating, SUCCESS>,
+          Transition<EvTransitionActiveShutdown<CpLifecycleEventMonitor, OrLifecycleNode>, StShuttingDown, SUCCESS>
 
       >
       reactions;
@@ -41,6 +41,8 @@ struct StActive : smacc2::SmaccState<StActive, SmAtomicLifecycle>
   // STATE FUNCTIONS
   static void staticConfigure()
   {
+    // Configure timer to demonstrate the active state for a few seconds
+    configure_orthogonal<OrTimer, cl_ros2_timer::CbTimerCountdownOnce>(5s);
   }
 
   void runtimeConfigure()

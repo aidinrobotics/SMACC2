@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ struct StRecoveryDeliberate1 : smacc2::SmaccState<StRecoveryDeliberate1, MsRecov
   // STATE FUNCTIONS
   static void staticConfigure()
   {
-    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(50);
+    configure_orthogonal<OrTimer, CbTimerCountdownOnce>(5s);
     configure_orthogonal<OrSubscriber, CbWatchdogSubscriberBehavior>();
     
     configure_orthogonal<OrKeyboard, CbDefaultKeyboardBehavior>();

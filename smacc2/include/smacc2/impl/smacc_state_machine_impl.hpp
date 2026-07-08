@@ -1,4 +1,4 @@
-// Copyright 2021 RobosoftAI Inc.
+// Copyright 2025 Robosoft Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,14 +27,6 @@
 #include <smacc2/introspection/introspection.hpp>
 #include <smacc2/smacc_client.hpp>
 #include <smacc2/smacc_event_generator.hpp>
-#include <smacc2/smacc_orthogonal.hpp>
-#include <smacc2/smacc_signal_detector.hpp>
-#include <smacc2/smacc_state.hpp>
-#include <smacc2/smacc_state_machine.hpp>
-#include <smacc2/smacc_state_reactor.hpp>
-
-#include <smacc2/introspection/introspection.hpp>
-#include <smacc2/smacc_client.hpp>
 #include <smacc2/smacc_orthogonal.hpp>
 #include <smacc2/smacc_signal_detector.hpp>
 #include <smacc2/smacc_state.hpp>
@@ -92,7 +84,6 @@ TOrthogonal * ISmaccStateMachine::getOrthogonal()
 template <typename TOrthogonal>
 void ISmaccStateMachine::createOrthogonal()
 {
-  //this->lockStateMachine("create orthogonal");
   std::lock_guard<std::recursive_mutex> guard(m_mutex_);
 
   std::string orthogonalkey = demangledTypeName<TOrthogonal>();
@@ -104,7 +95,7 @@ void ISmaccStateMachine::createOrthogonal()
 
     ret->setStateMachine(this);
 
-    RCLCPP_INFO(getLogger(), "%s Orthogonal is created", orthogonalkey.c_str());
+    RCLCPP_DEBUG(getLogger(), "%s Orthogonal is created", orthogonalkey.c_str());
   }
   else
   {
@@ -119,13 +110,14 @@ void ISmaccStateMachine::createOrthogonal()
     }
     RCLCPP_WARN_STREAM(getLogger(), ss.str());
   }
-  //this->unlockStateMachine("create orthogonal");
 }
 
 //-------------------------------------------------------------------------------------------------------
 template <typename SmaccComponentType>
-void ISmaccStateMachine::requiresComponent(SmaccComponentType *& storage, bool throwsException)
+void ISmaccStateMachine::requiresComponent(
+  SmaccComponentType *& storage, ComponentRequirement requirementType)
 {
+  bool throwsException = requirementType == ComponentRequirement::HARD;
   RCLCPP_DEBUG(
     getLogger(), "component %s is required",
     demangleSymbol(typeid(SmaccComponentType).name()).c_str());
@@ -149,29 +141,6 @@ void ISmaccStateMachine::requiresComponent(SmaccComponentType *& storage, bool t
 
   if (throwsException)
     throw std::runtime_error("component is required but it was not found in any orthogonal");
-
-  // std::string componentkey = demangledTypeName<SmaccComponentType>();
-  // SmaccComponentType *ret;
-
-  // auto it = components_.find(componentkey);
-
-  // if (it == components_.end())
-  // {
-  //     RCLCPP_DEBUG(getLogger(),"%s smacc component is required. Creating a new instance.",
-  //     componentkey.c_str());
-
-  //     ret = new SmaccComponentType();
-  //     ret->setStateMachine(this);
-  //     components_[componentkey] = static_cast<smacc2::ISmaccComponent *>(ret);
-  //     RCLCPP_DEBUG(getLogger(),"%s resource is required. Done.", componentkey.c_str());
-  // }
-  // else
-  // {
-  //     RCLCPP_DEBUG(getLogger(),"%s resource is required. Found resource in cache.",
-  //     componentkey.c_str()); ret = dynamic_cast<SmaccComponentType *>(it->second);
-  // }
-
-  // storage = ret;
 }
 //-------------------------------------------------------------------------------------------------------
 template <typename EventType>
@@ -220,9 +189,9 @@ void ISmaccStateMachine::postEvent(EventType * ev, EventLifeTime evlifetime)
   // some more events
 
   RCLCPP_DEBUG_STREAM(getLogger(), "[PostEvent entry point] " << eventtypename);
-  for (auto currentState : currentState_)
+  if (!currentState_.empty())
   {
-    propagateEventToStateReactors(currentState, ev);
+    propagateEventToStateReactors(currentState_.back(), ev);
   }
 
   this->signalDetector_->postEvent(ev);
@@ -232,7 +201,7 @@ template <typename EventType>
 void ISmaccStateMachine::postEvent(EventLifeTime evlifetime)
 {
   auto evname = smacc2::introspection::demangleSymbol<EventType>();
-  RCLCPP_INFO_STREAM(getLogger(), "Event: " << evname);
+  RCLCPP_DEBUG_STREAM(getLogger(), "Event: " << evname);
   auto * ev = new EventType();
   this->postEvent(ev, evlifetime);
 }
@@ -293,34 +262,13 @@ void ISmaccStateMachine::setGlobalSMData(std::string name, T value)
   this->updateStatusMessage();
 }
 
-//template <typename StateField, typename BehaviorType>
-//void ISmaccStateMachine::mapBehavior()
-//{
-//  std::string stateFieldName = demangleSymbol(typeid(StateField).name());
-//  std::string behaviorType = demangleSymbol(typeid(BehaviorType).name());
-//  RCLCPP_INFO(
-//    getLogger(), "Mapping state field '%s' to stateReactor '%s'", stateFieldName.c_str(),
-//    behaviorType.c_str());
-//  smacc2::ISmaccClientBehavior * globalreference;
-//  if (!this->getGlobalSMData(stateFieldName, globalreference))
-//  {
-//    // Using the requires component approach, we force a unique existence
-//    // of this component
-//    BehaviorType * behavior;
-//    this->requiresComponent(behavior);
-//    globalreference = dynamic_cast<smacc2::ISmaccClientBehavior *>(behavior);
-//
-//    this->setGlobalSMData(stateFieldName, globalreference);
-//  }
-//}
-
 namespace utils
 {
 template <int arity>
 struct Bind
 {
   template <typename TSmaccSignal, typename TMemberFunctionPrototype, typename TSmaccObjectType>
-  boost::signals2::connection bindaux(
+  smacc2::SmaccSignalConnection bindaux(
     TSmaccSignal & signal, TMemberFunctionPrototype callback, TSmaccObjectType * object,
     std::shared_ptr<CallbackCounterSemaphore> callbackCounter);
 };
@@ -329,7 +277,7 @@ template <>
 struct Bind<1>
 {
   template <typename TSmaccSignal, typename TMemberFunctionPrototype, typename TSmaccObjectType>
-  boost::signals2::connection bindaux(
+  smacc2::SmaccSignalConnection bindaux(
     TSmaccSignal & signal, TMemberFunctionPrototype callback, TSmaccObjectType * object,
     std::shared_ptr<CallbackCounterSemaphore> callbackCounter)
   {
@@ -354,7 +302,7 @@ template <>
 struct Bind<2>
 {
   template <typename TSmaccSignal, typename TMemberFunctionPrototype, typename TSmaccObjectType>
-  boost::signals2::connection bindaux(
+  smacc2::SmaccSignalConnection bindaux(
     TSmaccSignal & signal, TMemberFunctionPrototype callback, TSmaccObjectType * object,
     std::shared_ptr<CallbackCounterSemaphore> callbackCounter)
   {
@@ -378,7 +326,7 @@ template <>
 struct Bind<3>
 {
   template <typename TSmaccSignal, typename TMemberFunctionPrototype, typename TSmaccObjectType>
-  boost::signals2::connection bindaux(
+  smacc2::SmaccSignalConnection bindaux(
     TSmaccSignal & signal, TMemberFunctionPrototype callback, TSmaccObjectType * object,
     std::shared_ptr<CallbackCounterSemaphore> callbackCounter)
   {
@@ -402,7 +350,7 @@ template <>
 struct Bind<4>
 {
   template <typename TSmaccSignal, typename TMemberFunctionPrototype, typename TSmaccObjectType>
-  boost::signals2::connection bindaux(
+  smacc2::SmaccSignalConnection bindaux(
     TSmaccSignal & signal, TMemberFunctionPrototype callback, TSmaccObjectType * object,
     std::shared_ptr<CallbackCounterSemaphore> callbackCounter)
   {
@@ -425,7 +373,7 @@ struct Bind<4>
 using namespace smacc2::utils;
 
 template <typename TSmaccSignal, typename TMemberFunctionPrototype, typename TSmaccObjectType>
-boost::signals2::connection ISmaccStateMachine::createSignalConnection(
+smacc2::SmaccSignalConnection ISmaccStateMachine::createSignalConnection(
   TSmaccSignal & signal, TMemberFunctionPrototype callback, TSmaccObjectType * object)
 {
   std::lock_guard<std::recursive_mutex> lock(m_mutex_);
@@ -440,7 +388,7 @@ boost::signals2::connection ISmaccStateMachine::createSignalConnection(
 
   typedef decltype(callback) ft;
   Bind<boost::function_types::function_arity<ft>::value> binder;
-  boost::signals2::connection connection;
+  smacc2::SmaccSignalConnection connection;
 
   // long life-time objects
   if (
@@ -449,7 +397,7 @@ boost::signals2::connection ISmaccStateMachine::createSignalConnection(
     std::is_base_of<ISmaccOrthogonal, TSmaccObjectType>::value ||
     std::is_base_of<ISmaccStateMachine, TSmaccObjectType>::value)
   {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(),
       "[StateMachine] Long life-time SMACC signal subscription created. Subscriber is %s. Callback "
       "is: %s",
@@ -463,7 +411,7 @@ boost::signals2::connection ISmaccStateMachine::createSignalConnection(
     std::is_base_of<StateReactor, TSmaccObjectType>::value ||
     std::is_base_of<ISmaccClientBehavior, TSmaccObjectType>::value)
   {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(),
       "[StateMachine] Life-time constrained SMACC signal subscription created. Subscriber is %s",
       demangledTypeName<TSmaccObjectType>().c_str());
@@ -515,7 +463,7 @@ void ISmaccStateMachine::notifyOnStateEntryStart(StateType * state)
 template <typename StateType>
 void ISmaccStateMachine::notifyOnStateEntryEnd(StateType *)
 {
-  RCLCPP_INFO(
+  RCLCPP_DEBUG(
     getLogger(), "[%s] State OnEntry code finished.",
     demangleSymbol(typeid(StateType).name()).c_str());
 
@@ -540,7 +488,7 @@ void ISmaccStateMachine::notifyOnStateEntryEnd(StateType *)
   for (auto & sr : currentState->getStateReactors())
   {
     auto srname = smacc2::demangleSymbol(typeid(*sr).name());
-    RCLCPP_INFO_STREAM(getLogger(), "State reactor onEntry: " << srname);
+    RCLCPP_DEBUG_STREAM(getLogger(), "State reactor onEntry: " << srname);
     try
     {
       sr->onEntry();
@@ -558,7 +506,7 @@ void ISmaccStateMachine::notifyOnStateEntryEnd(StateType *)
   for (auto & eg : currentState->getEventGenerators())
   {
     auto egname = smacc2::demangleSymbol(typeid(*eg).name());
-    RCLCPP_INFO_STREAM(getLogger(), "Event generator onEntry: " << egname);
+    RCLCPP_DEBUG_STREAM(getLogger(), "Event generator onEntry: " << egname);
     try
     {
       eg->onEntry();
@@ -606,14 +554,13 @@ void ISmaccStateMachine::notifyOnRuntimeConfigured(StateType *)
 }
 
 template <typename StateType>
-void ISmaccStateMachine::notifyOnStateExitting(StateType * state)
+void ISmaccStateMachine::notifyOnStateExiting(StateType * state)
 {
   stateMachineCurrentAction = StateMachineInternalAction::STATE_EXITING;
   auto fullname = demangleSymbol(typeid(StateType).name());
-  RCLCPP_WARN_STREAM(getLogger(), "Exiting state: " << fullname);
-  // this->set_parameter("destroyed", true);
+  RCLCPP_DEBUG_STREAM(getLogger(), "Exiting state: " << fullname);
 
-  RCLCPP_INFO_STREAM(getLogger(), "Notification state exit: leaving state " << state);
+  RCLCPP_DEBUG_STREAM(getLogger(), "Notification state exit: leaving state " << state);
   for (auto pair : this->orthogonals_)
   {
     auto & orthogonal = pair.second;
@@ -633,7 +580,7 @@ void ISmaccStateMachine::notifyOnStateExitting(StateType * state)
   for (auto & sr : state->getStateReactors())
   {
     auto srname = smacc2::demangleSymbol(typeid(*sr).name());
-    RCLCPP_INFO_STREAM(getLogger(), "State reactor OnExit: " << srname);
+    RCLCPP_DEBUG_STREAM(getLogger(), "State reactor OnExit: " << srname);
     try
     {
       sr->onExit();
@@ -651,7 +598,7 @@ void ISmaccStateMachine::notifyOnStateExitting(StateType * state)
   for (auto & eg : state->getEventGenerators())
   {
     auto egname = smacc2::demangleSymbol(typeid(*eg).name());
-    RCLCPP_INFO_STREAM(getLogger(), "Event generator OnExit: " << egname);
+    RCLCPP_DEBUG_STREAM(getLogger(), "Event generator OnExit: " << egname);
     try
     {
       eg->onExit();
@@ -675,9 +622,9 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
   signalDetector_->notifyStateExited(state);
 
   auto fullname = demangleSymbol(typeid(StateType).name());
-  RCLCPP_WARN_STREAM(getLogger(), "Exiting state: " << fullname);
+  RCLCPP_DEBUG_STREAM(getLogger(), "Exiting state: " << fullname);
 
-  RCLCPP_INFO_STREAM(getLogger(), "Notification state disposing: leaving state" << state);
+  RCLCPP_DEBUG_STREAM(getLogger(), "Notification state disposing: leaving state" << state);
   for (auto pair : this->orthogonals_)
   {
     auto & orthogonal = pair.second;
@@ -697,7 +644,7 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
   for (auto & sr : state->getStateReactors())
   {
     auto srname = smacc2::demangleSymbol(typeid(*sr).name()).c_str();
-    RCLCPP_INFO(getLogger(), "State reactor disposing: %s", srname);
+    RCLCPP_DEBUG(getLogger(), "State reactor disposing: %s", srname);
     try
     {
       this->disconnectSmaccSignalObject(sr.get());
@@ -715,7 +662,7 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
   for (auto & eg : state->getEventGenerators())
   {
     auto egname = smacc2::demangleSymbol(typeid(*eg).name()).c_str();
-    RCLCPP_INFO(getLogger(), "Event generator disposing: %s", egname);
+    RCLCPP_DEBUG(getLogger(), "Event generator disposing: %s", egname);
     try
     {
       this->disconnectSmaccSignalObject(eg.get());
@@ -734,7 +681,7 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
   currentState_.pop_back();
 
   // then call exit state
-  RCLCPP_WARN_STREAM(getLogger(), "State exit: " << fullname);
+  RCLCPP_DEBUG_STREAM(getLogger(), "State exit: " << fullname);
 
   stateMachineCurrentAction = StateMachineInternalAction::TRANSITIONING;
   this->unlockStateMachine("state exit");
