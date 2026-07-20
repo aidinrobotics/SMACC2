@@ -26,14 +26,14 @@ namespace smacc2
 {
 void SmaccAsyncClientBehavior::executeOnEntry()
 {
-  RCLCPP_INFO_STREAM(getLogger(), "[" << getName() << "] asynchronous onEntry thread started");
+  RCLCPP_DEBUG_STREAM(getLogger(), "[" << getName() << "] asynchronous onEntry thread started");
   this->onEntryThread_ = std::async(
     std::launch::async,
     [=]
     {
       this->onEntry();
       this->postFinishEventFn_();
-      RCLCPP_INFO_STREAM(getLogger(), "[" << getName() << "] asynchronous onEntry thread finished");
+      RCLCPP_DEBUG_STREAM(getLogger(), "[" << getName() << "] asynchronous onEntry thread finished");
       return 0;
     });
 }
@@ -58,7 +58,7 @@ void SmaccAsyncClientBehavior::waitFutureIfNotFinished(
         else
         {
           // in progress
-          RCLCPP_INFO_STREAM(
+          RCLCPP_DEBUG_STREAM(
             getLogger(),
             "[" << getName()
                 << "] fut valid but waiting for asynchronous onEntry thread to finish: state: "
@@ -67,7 +67,7 @@ void SmaccAsyncClientBehavior::waitFutureIfNotFinished(
       }
       else
       {
-        RCLCPP_INFO_STREAM(
+        RCLCPP_DEBUG_STREAM(
           getLogger(),
           "[" << getName()
               << "] waiting future onEntryThread. It was not even created. Skipping wait.");
@@ -98,17 +98,17 @@ void SmaccAsyncClientBehavior::waitOnEntryThread(bool requestFinish)
 
 void SmaccAsyncClientBehavior::executeOnExit()
 {
-  RCLCPP_INFO_STREAM(getLogger(), "[" << getName() << "] onExit - join async onEntry thread");
+  RCLCPP_DEBUG_STREAM(getLogger(), "[" << getName() << "] onExit - join async onEntry thread");
   this->waitOnEntryThread(true);
 
-  RCLCPP_INFO_STREAM(
+  RCLCPP_DEBUG_STREAM(
     getLogger(), "[" << getName() << "] onExit - Creating asynchronous onExit thread");
   this->onExitThread_ = std::async(
     std::launch::async,
     [=]
     {
       this->onExit();
-      RCLCPP_INFO_STREAM(getLogger(), "[" << getName() << "] asynchronous onExit done.");
+      RCLCPP_DEBUG_STREAM(getLogger(), "[" << getName() << "] asynchronous onExit done.");
       return 0;
     });
 }
