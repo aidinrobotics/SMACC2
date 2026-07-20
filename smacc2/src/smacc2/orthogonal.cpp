@@ -52,7 +52,7 @@ void ISmaccOrthogonal::addClientBehavior(std::shared_ptr<smacc2::ISmaccClientBeh
 
   if (clBehavior != nullptr)
   {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(), "[Orthogonal: %s] Adding client behavior: %s.", this->getName().c_str(),
       clBehavior->getName().c_str());
     clBehavior->stateMachine_ = this->getStateMachine();
@@ -63,7 +63,7 @@ void ISmaccOrthogonal::addClientBehavior(std::shared_ptr<smacc2::ISmaccClientBeh
   }
   else
   {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(), "[Orthogonal: %s] No client behaviors in this state.", this->getName().c_str());
   }
 }
@@ -86,7 +86,7 @@ void ISmaccOrthogonal::runtimeConfigure()
 
   for (auto & clBehavior : clientBehaviors_.back())
   {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       getLogger(), "[Orthogonal: %s] runtimeConfigure(), current behavior: %s.",
       this->getName().c_str(), clBehavior->getName().c_str());
 
