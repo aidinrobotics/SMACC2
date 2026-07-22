@@ -36,7 +36,7 @@ bool ISmaccOrthogonal::requiresClient(SmaccClientType *& storage)
   }
 
   auto requiredClientName = demangledTypeName<SmaccClientType>();
-  RCLCPP_WARN_STREAM(
+  RCLCPP_DEBUG_STREAM(
     getLogger(), "Required client ["
                    << requiredClientName
                    << "] not found in current orthogonal. Searching in other orthogonals.");
@@ -48,7 +48,7 @@ bool ISmaccOrthogonal::requiresClient(SmaccClientType *& storage)
       storage = dynamic_cast<SmaccClientType *>(client.get());
       if (storage != nullptr)
       {
-        RCLCPP_WARN_STREAM(
+        RCLCPP_DEBUG_STREAM(
           getLogger(),
           "Required client  [" << requiredClientName << "] found in other orthogonal.");
         return true;
