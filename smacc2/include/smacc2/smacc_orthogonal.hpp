@@ -19,8 +19,10 @@
  ******************************************************************************************************************/
 
 #pragma once
+#include <map>
 #include <smacc2/common.hpp>
 #include <utility>
+#include <vector>
 
 namespace smacc2
 {
@@ -35,13 +37,17 @@ public:
 
   void addClientBehavior(std::shared_ptr<smacc2::ISmaccClientBehavior> clientBehavior);
 
-  void runtimeConfigure();
+  // The owning state is passed explicitly so that, when several states are active at
+  // once (parallel orthogonal regions), each state's client behaviors are looked up by
+  // owning-state key instead of a single LIFO stack top. For a single active leaf this
+  // reduces to the classic behavior.
+  void runtimeConfigure(ISmaccState * state);
 
-  void onEntry();
+  void onEntry(ISmaccState * state);
 
-  void onExit();
+  void onExit(ISmaccState * state);
 
-  void onDispose();
+  void onDispose(ISmaccState * state);
 
   virtual std::string getName() const;
 
@@ -53,8 +59,12 @@ public:
 
   inline const std::vector<std::shared_ptr<smacc2::ISmaccClient>> & getClients();
 
-  inline const std::vector<std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>> &
+  inline const std::map<ISmaccState *, std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>> &
   getClientBehaviors() const;
+
+  // Returns the client behaviors owned by a specific active state (empty if none).
+  const std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>> & getClientBehaviorsForState(
+    ISmaccState * state) const;
 
   template <typename T>
   void setGlobalSMData(std::string name, T value);
@@ -83,7 +93,10 @@ protected:
 private:
   ISmaccStateMachine * stateMachine_;
 
-  std::vector<std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>> clientBehaviors_;
+  // Client behaviors keyed by their owning state. Supports several simultaneously
+  // active states across parallel orthogonal regions without a shared LIFO stack.
+  std::map<ISmaccState *, std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>>
+    clientBehaviors_;
   friend class ISmaccStateMachine;
 
   std::mutex mutex_;

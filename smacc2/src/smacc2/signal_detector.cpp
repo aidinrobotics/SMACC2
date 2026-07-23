@@ -143,14 +143,15 @@ void SignalDetector::findUpdatableClientsAndComponents()
  */
 void SignalDetector::findUpdatableStateElements(ISmaccState * currentState)
 {
-  updatableStateElements_.push_back(std::vector<ISmaccUpdatable *>());
-
-  auto & updatableElements = updatableStateElements_.back();
+  // Key the update list by the owning state so parallel active states each keep their
+  // own list, and exiting one state does not drop a sibling region's updatables.
+  auto & updatableElements = updatableStateElements_[currentState];
+  updatableElements.clear();
 
   for (auto pair : this->smaccStateMachine_->getOrthogonals())
   {
     auto & orthogonal = pair.second;
-    auto & behaviors = orthogonal->getClientBehaviors().back();
+    auto & behaviors = orthogonal->getClientBehaviorsForState(currentState);
 
     for (auto & currentBehavior : behaviors)
     {
@@ -205,9 +206,9 @@ void SignalDetector::notifyStateConfigured(ISmaccState * currentState)
   this->findUpdatableStateElements(currentState);
 }
 
-void SignalDetector::notifyStateExited(ISmaccState * /*currentState*/)
+void SignalDetector::notifyStateExited(ISmaccState * currentState)
 {
-  this->updatableStateElements_.pop_back();
+  this->updatableStateElements_.erase(currentState);
 }
 
 void SignalDetector::notifyRosInitialized()
@@ -321,9 +322,9 @@ void SignalDetector::pollOnce()
       RCLCPP_DEBUG_STREAM(
         getLogger(), "Updatable states: " << this->updatableStateElements_.size());
 
-      for (auto stateElement : this->updatableStateElements_)
+      for (auto & stateElement : this->updatableStateElements_)
       {
-        for (auto * udpatableStateElement : stateElement)
+        for (auto * udpatableStateElement : stateElement.second)
         {
           std::string updatableElementName = demangleType(typeid(*udpatableStateElement));
           auto updatableElementNameCstr = updatableElementName.c_str();

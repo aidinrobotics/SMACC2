@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -461,20 +462,20 @@ void ISmaccStateMachine::notifyOnStateEntryStart(StateType * state)
 }
 
 template <typename StateType>
-void ISmaccStateMachine::notifyOnStateEntryEnd(StateType *)
+void ISmaccStateMachine::notifyOnStateEntryEnd(StateType * state)
 {
   RCLCPP_DEBUG(
     getLogger(), "[%s] State OnEntry code finished.",
     demangleSymbol(typeid(StateType).name()).c_str());
 
-  auto currentState = this->currentState_.back();
+  ISmaccState * currentState = state;
   for (auto pair : this->orthogonals_)
   {
     RCLCPP_DEBUG(getLogger(), "Orthogonal onEntry: %s.", pair.second->getName().c_str());
     auto & orthogonal = pair.second;
     try
     {
-      orthogonal->onEntry();
+      orthogonal->onEntry(currentState);
     }
     catch (const std::exception & e)
     {
@@ -529,19 +530,19 @@ void ISmaccStateMachine::notifyOnStateEntryEnd(StateType *)
 }
 
 template <typename StateType>
-void ISmaccStateMachine::notifyOnRuntimeConfigurationFinished(StateType *)
+void ISmaccStateMachine::notifyOnRuntimeConfigurationFinished(StateType * state)
 {
   for (auto pair : this->orthogonals_)
   {
     // RCLCPP_INFO(getLogger(),"ortho onruntime configure: %s", pair.second->getName().c_str());
     auto & orthogonal = pair.second;
-    orthogonal->runtimeConfigure();
+    orthogonal->runtimeConfigure(state);
   }
 
   {
     std::lock_guard<std::recursive_mutex> lock(m_mutex_);
     this->updateStatusMessage();
-    this->signalDetector_->notifyStateConfigured(this->currentState_.back());
+    this->signalDetector_->notifyStateConfigured(state);
 
     stateMachineCurrentAction = StateMachineInternalAction::STATE_ENTERING;
   }
@@ -566,7 +567,7 @@ void ISmaccStateMachine::notifyOnStateExiting(StateType * state)
     auto & orthogonal = pair.second;
     try
     {
-      orthogonal->onExit();
+      orthogonal->onExit(state);
     }
     catch (const std::exception & e)
     {
@@ -630,7 +631,7 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
     auto & orthogonal = pair.second;
     try
     {
-      orthogonal->onDispose();
+      orthogonal->onDispose(state);
     }
     catch (const std::exception & e)
     {
@@ -678,7 +679,21 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
   }
 
   this->stateCallbackConnections.clear();
-  currentState_.pop_back();
+  // Remove the specific exiting state rather than the LIFO top. With parallel
+  // orthogonal regions the exiting state is not necessarily the last one entered,
+  // so popping the back would tear down a sibling region by mistake.
+  {
+    ISmaccState * exitingState = state;
+    auto it = std::find(currentState_.begin(), currentState_.end(), exitingState);
+    if (it != currentState_.end())
+    {
+      currentState_.erase(it);
+    }
+    else if (!currentState_.empty())
+    {
+      currentState_.pop_back();
+    }
+  }
 
   // then call exit state
   RCLCPP_DEBUG_STREAM(getLogger(), "State exit: " << fullname);

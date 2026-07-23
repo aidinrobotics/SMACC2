@@ -67,9 +67,15 @@ public:
   template <typename StateType>
   std::shared_ptr<SmaccStateInfo> getState()
   {
-    if (this->containsState<StateType>())
+    // Resolve the lookup key through inner_context_type. For regular states and the
+    // state machine this is the type itself (identity), but for a boost orthogonal<N>
+    // region wrapper it is the owning superstate. This lets parallel-region children
+    // resolve their real parent so the introspection hierarchy is not broken.
+    auto key = typeid(typename StateType::inner_context_type).name();
+    auto it = states.find(key);
+    if (it != states.end())
     {
-      return states[typeid(StateType).name()];
+      return it->second;
     }
     return nullptr;
   }
