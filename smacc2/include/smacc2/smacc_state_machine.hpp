@@ -94,10 +94,23 @@ public:
   void requiresComponent(SmaccComponentType *& storage, ComponentRequirement requirementType);
 
   template <typename EventType>
-  void postEvent(EventType * ev, EventLifeTime evlifetime = EventLifeTime::ABSOLUTE);
+  void postEvent(
+    EventType * ev, EventLifeTime evlifetime = EventLifeTime::ABSOLUTE,
+    ISmaccState * eventOwner = nullptr);
 
   template <typename EventType>
-  void postEvent(EventLifeTime evlifetime = EventLifeTime::ABSOLUTE);
+  void postEvent(EventLifeTime evlifetime = EventLifeTime::ABSOLUTE, ISmaccState * eventOwner = nullptr);
+
+  // Ownership routing for parallel orthogonal regions. Returns true when
+  // `eventOwner` and `reactingState` sit on divergent branches of the active state
+  // tree (neither is an ancestor of the other), i.e. they belong to different
+  // parallel regions -- in which case `reactingState` must NOT consume an event
+  // owned by `eventOwner`, and the reaction should forward it instead. Returns false
+  // (consume normally) when either pointer is null, they are the same state, or one
+  // is an ancestor of the other (the classic single-branch case, and container-state
+  // broadcast where an ancestor's behavior feeds descendant reactions).
+  bool eventOwnerInDifferentBranch(
+    ISmaccState * eventOwner, ISmaccState * reactingState) const;
 
   // gets data from the state machine blackboard
   template <typename T>

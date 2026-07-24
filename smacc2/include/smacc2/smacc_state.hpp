@@ -31,6 +31,12 @@ public:
 
   inline ISmaccState * getParentState() { return parentState_; }
 
+  // Introspection metadata for this state instance, resolved at construction.
+  // Exposed so the state machine can enumerate every currently active state's
+  // info when publishing status: parallel fork-join regions keep several states
+  // active at once. Non-owning; may be null before the state is fully built.
+  inline const smacc2::introspection::SmaccStateInfo * getStateInfo() const { return stateInfo_; }
+
   inline rclcpp::Node::SharedPtr & getNode() { return node_; }
 
   inline rclcpp::Logger getLogger() { return *logger_; }

@@ -105,4 +105,7 @@ template <
     &boost::statechart::detail::no_context<Event>::no_function>
 class Transition;
 
+template <class TriggerEvent, class TRegionDoneEvent>
+class RegionCompletion;
+
 }  // namespace smacc2

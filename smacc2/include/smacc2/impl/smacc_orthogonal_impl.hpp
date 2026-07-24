@@ -92,15 +92,19 @@ template <typename TClientBehavior>
 TClientBehavior * ISmaccOrthogonal::getClientBehavior(int index)
 {
   int i = 0;
-  for (auto & cb : this->clientBehaviors_.back())
+  // Search across all currently active states' behaviors owned by this orthogonal.
+  for (auto & entry : this->clientBehaviors_)
   {
-    auto * ret = dynamic_cast<TClientBehavior *>(cb.get());
-    if (ret != nullptr)
+    for (auto & cb : entry.second)
     {
-      if (i == index)
-        return ret;
-      else
-        i++;
+      auto * ret = dynamic_cast<TClientBehavior *>(cb.get());
+      if (ret != nullptr)
+      {
+        if (i == index)
+          return ret;
+        else
+          i++;
+      }
     }
   }
 
@@ -111,10 +115,19 @@ inline const std::vector<std::shared_ptr<smacc2::ISmaccClient>> & ISmaccOrthogon
   return clients_;
 }
 
-inline const std::vector<std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>> &
+inline const std::map<ISmaccState *, std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>>> &
 ISmaccOrthogonal::getClientBehaviors() const
 {
   return this->clientBehaviors_;
+}
+
+inline const std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>> &
+ISmaccOrthogonal::getClientBehaviorsForState(ISmaccState * state) const
+{
+  static const std::vector<std::shared_ptr<smacc2::ISmaccClientBehavior>> empty;
+  auto it = this->clientBehaviors_.find(state);
+  if (it == this->clientBehaviors_.end()) return empty;
+  return it->second;
 }
 
 template <typename T>

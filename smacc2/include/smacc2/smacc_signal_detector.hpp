@@ -21,8 +21,10 @@
 
 #include <atomic>
 #include <boost/thread.hpp>
+#include <map>
 #include <smacc2/common.hpp>
 #include <smacc2_msgs/msg/smacc_status.hpp>
+#include <vector>
 
 namespace smacc2
 {
@@ -82,7 +84,10 @@ private:
 
   std::vector<ISmaccUpdatable *> updatableClients_;
 
-  std::vector<std::vector<ISmaccUpdatable *>> updatableStateElements_;
+  // Updatable elements keyed by their owning active state. Several states can be
+  // active simultaneously (parallel orthogonal regions), so a per-state map replaces
+  // the previous LIFO stack of update lists.
+  std::map<ISmaccState *, std::vector<ISmaccUpdatable *>> updatableStateElements_;
   std::atomic<int64_t> lastState_;
 
   void findUpdatableClientsAndComponents();

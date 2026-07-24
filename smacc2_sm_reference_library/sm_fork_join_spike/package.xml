@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>sm_fork_join_spike</name>
+  <version>0.0.1</version>
+  <description>
+    Minimal SMACC2 state machine exercising true multi-state fork-join via boost
+    orthogonal regions. Two regions run independent state sequences concurrently
+    and the parent joins on EvAllRegionsDone before advancing to the next state.
+  </description>
+  <maintainer email="hw.park@aidinrobotics.co.kr">Aidin Robotics</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>cl_ros2_timer</depend>
+  <depend>smacc2</depend>
+  <depend>smacc2_library</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

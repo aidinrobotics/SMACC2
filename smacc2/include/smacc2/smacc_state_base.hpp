@@ -64,10 +64,16 @@ public:
   // Constructor that initializes the state ros node handle
   SmaccState(my_context ctx)
   {
+    // The context may also be a boost orthogonal<N> region wrapper of a SmaccState
+    // (used for fork-join parallel regions). In that case Context itself is not an
+    // ISmaccState, but Context::inner_context_type (aliased as context_type) is.
     static_assert(
       std::is_base_of<ISmaccState, Context>::value ||
-        std::is_base_of<ISmaccStateMachine, Context>::value,
-      "The context class must be a SmaccState or a SmaccStateMachine");
+        std::is_base_of<ISmaccStateMachine, Context>::value ||
+        std::is_base_of<ISmaccState, context_type>::value ||
+        std::is_base_of<ISmaccStateMachine, context_type>::value,
+      "The context class must be a SmaccState, a SmaccStateMachine, or an orthogonal "
+      "region of one");
     static_assert(
       !std::is_same<MostDerived, Context>::value,
       "The context must be a different state or state machine "
@@ -83,8 +89,11 @@ public:
 
     this->stateInfo_ = getStateInfo();
 
-    // storing a reference to the parent state
-    auto & ps = this->template context<Context>();
+    // storing a reference to the parent state. We resolve through context_type
+    // (== Context for regular states and the state machine, and the real parent
+    // SmaccState when Context is a boost orthogonal<N> region wrapper) so that
+    // parallel-region children resolve to their owning superstate.
+    auto & ps = this->template context<context_type>();
     parentState_ = dynamic_cast<ISmaccState *>(&ps);
     finishStateThrown = false;
   }

@@ -26,17 +26,17 @@
 namespace smacc2
 {
 template <typename AsyncCB, typename Orthogonal>
-struct EvCbFinished : sc::event<EvCbFinished<AsyncCB, Orthogonal>>
+struct EvCbFinished : smacc2::SmaccEventBase, sc::event<EvCbFinished<AsyncCB, Orthogonal>>
 {
 };
 
 template <typename AsyncCB, typename Orthogonal>
-struct EvCbSuccess : sc::event<EvCbSuccess<AsyncCB, Orthogonal>>
+struct EvCbSuccess : smacc2::SmaccEventBase, sc::event<EvCbSuccess<AsyncCB, Orthogonal>>
 {
 };
 
 template <typename AsyncCB, typename Orthogonal>
-struct EvCbFailure : sc::event<EvCbFailure<AsyncCB, Orthogonal>>
+struct EvCbFailure : smacc2::SmaccEventBase, sc::event<EvCbFailure<AsyncCB, Orthogonal>>
 {
 };
 
