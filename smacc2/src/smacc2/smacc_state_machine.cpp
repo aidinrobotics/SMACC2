@@ -22,6 +22,9 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <list>
+#include <set>
+#include <string>
 #include <smacc2/client_bases/smacc_action_client.hpp>
 #include <smacc2/smacc_orthogonal.hpp>
 #include <smacc2/smacc_signal_detector.hpp>
@@ -149,12 +152,29 @@ void ISmaccStateMachine::updateStatusMessage()
     if (runMode_ == SMRunMode::DEBUG)
     {
       status_msg_.current_states.clear();
-      std::list<const SmaccStateInfo *> ancestorList;
-      currentStateInfo_->getAncestors(ancestorList);
 
-      for (auto & ancestor : ancestorList)
+      // Publish the union of every currently active state's root->leaf path, not just
+      // the single most-recently entered leaf. With parallel fork-join regions several
+      // branches are active at the same time, and each contributes its own path. The
+      // dedup set keeps a shared ancestor (the containing superstate) from repeating.
+      // For a single active branch this reduces to the classic single-path behavior.
+      std::set<std::string> seen;
+      for (auto * activeState : currentState_)
       {
-        status_msg_.current_states.push_back(ancestor->toShortName());
+        if (activeState == nullptr) continue;
+        const auto * activeStateInfo = activeState->getStateInfo();
+        if (activeStateInfo == nullptr) continue;
+
+        std::list<const SmaccStateInfo *> ancestorList;
+        activeStateInfo->getAncestors(ancestorList);
+        for (auto & ancestor : ancestorList)
+        {
+          const std::string & shortName = ancestor->toShortName();
+          if (seen.insert(shortName).second)
+          {
+            status_msg_.current_states.push_back(shortName);
+          }
+        }
       }
 
       status_msg_.global_variable_names.clear();
