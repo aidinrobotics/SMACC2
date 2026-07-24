@@ -76,7 +76,23 @@ enum class ComponentRequirement
   HARD
 };
 
+// Common base for region-local SMACC events (behavior/action/timer completions).
+// Carries the state that owns the source of the event so the framework can route
+// the event to its owning parallel region instead of letting a sibling region
+// consume it (boost::statechart dispatches by type and stops at the first consumer;
+// with parallel orthogonal regions that lets one region steal another region's
+// completion event). `eventOwner_` stays null for events that are not region-local
+// (e.g. global broadcast events), and the ownership guard is a no-op for them and
+// for single-branch state machines. Polymorphic so the guard can recover the owner
+// from a boost event_base via dynamic_cast without knowing the concrete event type.
+struct SmaccEventBase
+{
+  ISmaccState * eventOwner_ = nullptr;
+  virtual ~SmaccEventBase() = default;
+};
+
 }  // namespace smacc2
 
 #include <smacc2/smacc_default_events.hpp>
+#include <smacc2/smacc_region_completion.hpp>
 #include <smacc2/smacc_transition.hpp>

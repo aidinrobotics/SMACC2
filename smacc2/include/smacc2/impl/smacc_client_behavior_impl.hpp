@@ -37,7 +37,9 @@ void ISmaccClientBehavior::postEvent(const EventType & ev)
   }
   else
   {
-    stateMachine_->postEvent(ev, EventLifeTime::CURRENT_STATE);
+    // Tag with the owning state so parallel-region routing can deliver this
+    // completion event only to the region that owns this behavior.
+    stateMachine_->postEvent(ev, EventLifeTime::CURRENT_STATE, this->currentState);
   }
 }
 
@@ -53,7 +55,7 @@ void ISmaccClientBehavior::postEvent()
   }
   else
   {
-    stateMachine_->template postEvent<EventType>(EventLifeTime::CURRENT_STATE);
+    stateMachine_->template postEvent<EventType>(EventLifeTime::CURRENT_STATE, this->currentState);
   }
 }
 

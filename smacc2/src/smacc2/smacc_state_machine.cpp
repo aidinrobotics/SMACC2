@@ -19,6 +19,7 @@
  ******************************************************************************************************************/
 
 #include <rcl/time.h>
+#include <algorithm>
 #include <chrono>
 #include <functional>
 #include <smacc2/client_bases/smacc_action_client.hpp>
@@ -97,6 +98,42 @@ const std::map<std::string, std::shared_ptr<smacc2::ISmaccOrthogonal>> &
 ISmaccStateMachine::getOrthogonals() const
 {
   return this->orthogonals_;
+}
+
+bool ISmaccStateMachine::eventOwnerInDifferentBranch(
+  ISmaccState * eventOwner, ISmaccState * reactingState) const
+{
+  // Only region-local events carry an owner; everything else consumes normally.
+  if (eventOwner == nullptr || reactingState == nullptr) return false;
+  if (eventOwner == reactingState) return false;
+
+  // Only route among currently active states. If the owner state already exited while
+  // this event was still queued (e.g. a sibling behavior of the same state fired an
+  // earlier transition), the event is stale for routing purposes. Fall back to normal
+  // dispatch and -- crucially -- never walk a possibly-dangling owner pointer. This is
+  // a plain pointer-value comparison against the live active set, so it is safe even if
+  // `eventOwner` points at freed memory.
+  if (std::find(currentState_.begin(), currentState_.end(), eventOwner) == currentState_.end())
+  {
+    return false;
+  }
+
+  // Same branch when one state is an ancestor of the other (root->leaf path). This
+  // covers the single active branch case and the container-state broadcast pattern
+  // (a container behavior feeding descendant reactions). Only two states on divergent
+  // branches -- which can only happen across parallel orthogonal regions -- are "in a
+  // different branch" and must not consume each other's region-local events.
+  auto isAncestorOrSelf = [](ISmaccState * ancestor, ISmaccState * node) {
+    for (ISmaccState * s = node; s != nullptr; s = s->getParentState())
+    {
+      if (s == ancestor) return true;
+    }
+    return false;
+  };
+
+  if (isAncestorOrSelf(eventOwner, reactingState)) return false;
+  if (isAncestorOrSelf(reactingState, eventOwner)) return false;
+  return true;
 }
 
 void ISmaccStateMachine::updateStatusMessage()

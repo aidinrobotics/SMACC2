@@ -145,9 +145,17 @@ void ISmaccStateMachine::requiresComponent(
 }
 //-------------------------------------------------------------------------------------------------------
 template <typename EventType>
-void ISmaccStateMachine::postEvent(EventType * ev, EventLifeTime evlifetime)
+void ISmaccStateMachine::postEvent(EventType * ev, EventLifeTime evlifetime, ISmaccState * eventOwner)
 {
   std::lock_guard<std::recursive_mutex> guard(eventQueueMutex_);
+
+  // Tag region-local events with their owning state so the ownership guard can route
+  // them to the correct parallel region. Only events deriving from SmaccEventBase can
+  // carry the owner; all others are unaffected.
+  if constexpr (std::is_base_of<SmaccEventBase, EventType>::value)
+  {
+    if (eventOwner != nullptr) ev->eventOwner_ = eventOwner;
+  }
 
 #define eventtypename demangleSymbol<EventType>().c_str()
 
@@ -199,12 +207,12 @@ void ISmaccStateMachine::postEvent(EventType * ev, EventLifeTime evlifetime)
 }
 
 template <typename EventType>
-void ISmaccStateMachine::postEvent(EventLifeTime evlifetime)
+void ISmaccStateMachine::postEvent(EventLifeTime evlifetime, ISmaccState * eventOwner)
 {
   auto evname = smacc2::introspection::demangleSymbol<EventType>();
   RCLCPP_DEBUG_STREAM(getLogger(), "Event: " << evname);
   auto * ev = new EventType();
-  this->postEvent(ev, evlifetime);
+  this->postEvent(ev, evlifetime, eventOwner);
 }
 
 template <typename T>

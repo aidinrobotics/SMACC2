@@ -19,7 +19,7 @@
 namespace cl_ros2_timer
 {
 template <typename TSource, typename TOrthogonal>
-struct EvTimer : sc::event<EvTimer<TSource, TOrthogonal>>
+struct EvTimer : smacc2::SmaccEventBase, sc::event<EvTimer<TSource, TOrthogonal>>
 {
 };
 

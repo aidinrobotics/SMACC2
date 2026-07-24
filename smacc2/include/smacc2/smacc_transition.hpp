@@ -71,6 +71,18 @@ public:
   static boost::statechart::detail::reaction_result react(
     State & stt, const EventBase & evt, const IdType & eventType)
   {
+    // Parallel-region ownership guard: if this is a region-local event owned by a
+    // state on a divergent branch (a different parallel orthogonal region than the
+    // reacting state), do not consume it here -- forward it so it reaches the region
+    // that owns it. No-op for events without an owner and for single-branch machines.
+    const auto * ownedEvent = dynamic_cast<const smacc2::SmaccEventBase *>(&evt);
+    if (
+      ownedEvent != nullptr &&
+      stt.getStateMachine().eventOwnerInDifferentBranch(ownedEvent->eventOwner_, &stt))
+    {
+      return boost::statechart::detail::do_forward_event;
+    }
+
     typedef boost::statechart::detail::reaction_dispatcher<
       reactions<State>, State, EventBase, Event, TransitionContext, IdType>
       dispatcher;

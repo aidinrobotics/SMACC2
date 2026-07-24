@@ -323,6 +323,15 @@ void processTransition(
 {
 }
 
+// The guarded region-completion reaction posts a join event rather than transitioning
+// to a state, so like a custom_reaction it declares no transition edge to introspection.
+template <typename TriggerEvent, typename TRegionDoneEvent>
+void processTransition(
+  smacc2::RegionCompletion<TriggerEvent, TRegionDoneEvent> *,
+  std::shared_ptr<SmaccStateInfo> & sourceState)
+{
+}
+
 //---------------------------------------------
 // only reached if it is a leaf transition in the mpl::list
 
