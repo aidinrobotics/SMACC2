@@ -120,6 +120,12 @@ public:
   template <typename T>
   void setGlobalSMData(std::string name, T value);
 
+  // erases every entry of the state machine blackboard. The blackboard is a member of
+  // this state machine instance (one per node process), so the wipe is scoped to this
+  // node -- data owned by other nodes' state machines is untouched. Callers that need
+  // some keys to survive must read them out before and write them back after.
+  void clearGlobalSMData();
+
   std::string getStateMachineName();
 
   void state_machine_visualization();
