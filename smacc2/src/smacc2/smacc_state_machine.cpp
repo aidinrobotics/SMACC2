@@ -139,6 +139,20 @@ bool ISmaccStateMachine::eventOwnerInDifferentBranch(
   return true;
 }
 
+void ISmaccStateMachine::clearGlobalSMData()
+{
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+
+    // Each entry owns the stringify closure that reads it back, so dropping the entries
+    // drops those closures too -- nothing is left pointing at erased data.
+    globalData_.clear();
+  }
+
+  // Republish so subscribers see the wipe instead of the last pre-wipe variable list.
+  this->updateStatusMessage();
+}
+
 void ISmaccStateMachine::updateStatusMessage()
 {
   std::lock_guard<std::recursive_mutex> lock(m_mutex_);
