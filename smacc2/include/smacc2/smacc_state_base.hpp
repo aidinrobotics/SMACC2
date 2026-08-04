@@ -124,23 +124,26 @@ public:
   virtual ISmaccState * getParentState() { return parentState_; }
 
   // this function is called by boot statechart before the destructor call
+  //
+  // The state machine mutex must NOT be held around this sequence. Leaving a state joins the
+  // asynchronous client behavior threads, and those threads take that same mutex to reach the
+  // global blackboard. Holding it across the join makes the two wait on each other forever, and
+  // requestForceFinish() cannot break it because a behavior blocked on a mutex never gets to
+  // check the flag. Each callee below locks only the short regions that touch shared state.
   void exit()
   {
     auto * derivedThis = static_cast<MostDerived *>(this);
+    this->getStateMachine().notifyOnStateExiting(derivedThis);
+    try
     {
-      std::lock_guard<std::recursive_mutex> lock(this->getStateMachine().getMutex());
-      this->getStateMachine().notifyOnStateExiting(derivedThis);
-      try
-      {
-        TRACEPOINT(smacc2_state_onExit_start, STATE_NAME);
-        standardOnExit(*derivedThis);
-        TRACEPOINT(smacc2_state_onExit_end, STATE_NAME);
-      }
-      catch (...)
-      {
-      }
-      this->getStateMachine().notifyOnStateExited(derivedThis);
+      TRACEPOINT(smacc2_state_onExit_start, STATE_NAME);
+      standardOnExit(*derivedThis);
+      TRACEPOINT(smacc2_state_onExit_end, STATE_NAME);
     }
+    catch (...)
+    {
+    }
+    this->getStateMachine().notifyOnStateExited(derivedThis);
   }
 
 public:

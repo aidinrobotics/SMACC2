@@ -173,6 +173,11 @@ void ISmaccOrthogonal::onExit(ISmaccState * state)
 
 void ISmaccOrthogonal::onDispose(ISmaccState * state)
 {
+  // The behavior map used to be covered by the state machine mutex held by the caller. That
+  // mutex is no longer held here, so guard the map with the orthogonal's own lock, the same
+  // one addClientBehavior, onEntry and onExit already use.
+  std::lock_guard<std::mutex> lock(this->mutex_);
+
   auto it = clientBehaviors_.find(state);
   if (it == clientBehaviors_.end()) return;
 

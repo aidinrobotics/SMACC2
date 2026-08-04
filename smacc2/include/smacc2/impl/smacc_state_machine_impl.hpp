@@ -565,7 +565,15 @@ void ISmaccStateMachine::notifyOnRuntimeConfigured(StateType *)
 template <typename StateType>
 void ISmaccStateMachine::notifyOnStateExiting(StateType * state)
 {
-  stateMachineCurrentAction = StateMachineInternalAction::STATE_EXITING;
+  {
+    // Publish the exiting mark under the lock. A signal detector sweep already in flight
+    // finishes before we get here, and any later sweep sees the mark and skips the state
+    // scoped elements that are about to be torn down. The teardown below then runs unlocked
+    // because it joins client behavior threads that need this mutex themselves.
+    std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+    stateMachineCurrentAction = StateMachineInternalAction::STATE_EXITING;
+  }
+
   auto fullname = demangleSymbol(typeid(StateType).name());
   RCLCPP_DEBUG_STREAM(getLogger(), "Exiting state: " << fullname);
 
@@ -626,13 +634,21 @@ void ISmaccStateMachine::notifyOnStateExiting(StateType * state)
 template <typename StateType>
 void ISmaccStateMachine::notifyOnStateExited(StateType * state)
 {
-  this->lockStateMachine("state exit");
-
-  signalDetector_->notifyStateExited(state);
+  {
+    // Retiring the state scoped updatable elements touches shared state, so it is locked.
+    // It also has to happen before the disposal below, otherwise the signal detector could
+    // still reach an element while that element is being torn down.
+    std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+    signalDetector_->notifyStateExited(state);
+  }
 
   auto fullname = demangleSymbol(typeid(StateType).name());
   RCLCPP_DEBUG_STREAM(getLogger(), "Exiting state: " << fullname);
 
+  // Disposal joins the asynchronous onExit threads and waits for the in flight signal
+  // callbacks of each object to return. Both waits run with the state machine mutex released:
+  // the threads and callbacks being waited on may take that mutex themselves to reach the
+  // global blackboard, and holding it here would deadlock them against this thread.
   RCLCPP_DEBUG_STREAM(getLogger(), "Notification state disposing: leaving state" << state);
   for (auto pair : this->orthogonals_)
   {
@@ -686,28 +702,33 @@ void ISmaccStateMachine::notifyOnStateExited(StateType * state)
     }
   }
 
-  this->stateCallbackConnections.clear();
-  // Remove the specific exiting state rather than the LIFO top. With parallel
-  // orthogonal regions the exiting state is not necessarily the last one entered,
-  // so popping the back would tear down a sibling region by mistake.
+  // Everything left is plain bookkeeping on shared containers, so it is locked again. No
+  // thread joins happen inside this block.
   {
-    ISmaccState * exitingState = state;
-    auto it = std::find(currentState_.begin(), currentState_.end(), exitingState);
-    if (it != currentState_.end())
+    std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+
+    this->stateCallbackConnections.clear();
+    // Remove the specific exiting state rather than the LIFO top. With parallel
+    // orthogonal regions the exiting state is not necessarily the last one entered,
+    // so popping the back would tear down a sibling region by mistake.
     {
-      currentState_.erase(it);
+      ISmaccState * exitingState = state;
+      auto it = std::find(currentState_.begin(), currentState_.end(), exitingState);
+      if (it != currentState_.end())
+      {
+        currentState_.erase(it);
+      }
+      else if (!currentState_.empty())
+      {
+        currentState_.pop_back();
+      }
     }
-    else if (!currentState_.empty())
-    {
-      currentState_.pop_back();
-    }
+
+    // then call exit state
+    RCLCPP_DEBUG_STREAM(getLogger(), "State exit: " << fullname);
+
+    stateMachineCurrentAction = StateMachineInternalAction::TRANSITIONING;
   }
-
-  // then call exit state
-  RCLCPP_DEBUG_STREAM(getLogger(), "State exit: " << fullname);
-
-  stateMachineCurrentAction = StateMachineInternalAction::TRANSITIONING;
-  this->unlockStateMachine("state exit");
 }
 //------------------------------------------------------------------------------------------------
 template <typename EventType>
