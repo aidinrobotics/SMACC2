@@ -77,16 +77,27 @@ ISmaccStateMachine::~ISmaccStateMachine()
 void ISmaccStateMachine::disconnectSmaccSignalObject(void * object_ptr)
 {
   RCLCPP_DEBUG(nh_->get_logger(), "[SmaccSignal] Object signal disconnecting %ld", (long)object_ptr);
-  if (stateCallbackConnections.count(object_ptr) > 0)
+
+  std::shared_ptr<CallbackCounterSemaphore> callbackSemaphore;
   {
-    auto callbackSemaphore = stateCallbackConnections[object_ptr];
-    callbackSemaphore->finalize();
-    stateCallbackConnections.erase(object_ptr);
+    // The connection map is shared with createSignalConnection, so taking the entry out is
+    // locked. The waiting is not: finalize() blocks until the in flight callbacks of this
+    // object return, and those callbacks may take this same mutex to reach the global
+    // blackboard. Waiting while holding it would deadlock the two against each other.
+    std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+
+    auto it = stateCallbackConnections.find(object_ptr);
+    if (it == stateCallbackConnections.end())
+    {
+      RCLCPP_DEBUG(nh_->get_logger(), "[SmaccSignal] No signals found %ld", (long)object_ptr);
+      return;
+    }
+
+    callbackSemaphore = it->second;
+    stateCallbackConnections.erase(it);
   }
-  else
-  {
-    RCLCPP_DEBUG(nh_->get_logger(), "[SmaccSignal] No signals found %ld", (long)object_ptr);
-  }
+
+  callbackSemaphore->finalize();
 }
 
 rclcpp::Node::SharedPtr ISmaccStateMachine::getNode() { return this->nh_; }
