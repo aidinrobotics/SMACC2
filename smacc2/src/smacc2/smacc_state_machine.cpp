@@ -167,9 +167,24 @@ void ISmaccStateMachine::clearGlobalSMData()
 void ISmaccStateMachine::updateStatusMessage()
 {
   std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+  if (runMode_ != SMRunMode::DEBUG) return;  // 원래도 DEBUG 가 아니면 발행하지 않았다
+  statusDirty_ = true;
+  if (std::chrono::steady_clock::now() - lastStatusBuild_ >= statusMinPeriod_)
+  {
+    buildAndPublishStatus();  // 한동안 조용했으면 바로 낸다
+  }
+  // 아니면 statusFlushTimer_ 가 statusMinPeriod_ 뒤에 마지막 상태로 한 번 낸다
+}
+
+void ISmaccStateMachine::buildAndPublishStatus()
+{
+  std::lock_guard<std::recursive_mutex> lock(m_mutex_);
 
   if (currentStateInfo_ != nullptr)
   {
+    statusDirty_ = false;
+    lastStatusBuild_ = std::chrono::steady_clock::now();
+
     RCLCPP_DEBUG_STREAM(
       nh_->get_logger(),
       "[StateMachine] Setting state active: " << currentStateInfo_->getFullPath());
@@ -205,7 +220,7 @@ void ISmaccStateMachine::updateStatusMessage()
       status_msg_.global_variable_names.clear();
       status_msg_.global_variable_values.clear();
 
-      for (auto entry : this->globalData_)
+      for (const auto & entry : this->globalData_)
       {
         status_msg_.global_variable_names.push_back(entry.first);
         status_msg_.global_variable_values.push_back(
@@ -235,6 +250,23 @@ void ISmaccStateMachine::onInitialized()
   auto ros_clock = rclcpp::Clock::make_shared();
   timer_ =
     rclcpp::create_timer(nh_, ros_clock, 0.5s, [=]() { this->state_machine_visualization(); });
+
+  double min_period_sec = 0.5;
+  if (nh_->get_parameter("status_min_period_sec", min_period_sec) && min_period_sec >= 0.0)
+  {
+    statusMinPeriod_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+      std::chrono::duration<double>(min_period_sec));
+  }
+  statusFlushTimer_ = rclcpp::create_timer(
+    nh_, ros_clock, 0.1s,
+    [=]()
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_mutex_);
+      if (statusDirty_ && std::chrono::steady_clock::now() - lastStatusBuild_ >= statusMinPeriod_)
+      {
+        buildAndPublishStatus();
+      }
+    });
 }
 
 void ISmaccStateMachine::initializeROS(std::string shortname)

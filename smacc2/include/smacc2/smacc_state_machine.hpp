@@ -19,6 +19,8 @@
  ******************************************************************************************************************/
 #pragma once
 
+#include <chrono>
+
 #include <boost/any.hpp>
 #include <map>
 #include <mutex>
@@ -246,6 +248,15 @@ private:
   void propagateEventToStateReactors(ISmaccState * st, EventType * ev);
 
   void updateStatusMessage();
+
+  // status 발행 묶기: updateStatusMessage() 는 "바뀜" 표시만 하고, 실제 직렬화·발행은
+  // 마지막 발행 후 statusMinPeriod_ 가 지났을 때만 한다(남은 변경은 statusFlushTimer_ 가 마저 낸다).
+  // 큰 전역변수(경로 목록 등)를 상태 진입·변수 저장마다 문자열로 바꾸던 비용을 없앤다.
+  void buildAndPublishStatus();
+  bool statusDirty_ = false;
+  std::chrono::steady_clock::time_point lastStatusBuild_{};
+  std::chrono::steady_clock::duration statusMinPeriod_ = std::chrono::milliseconds(500);
+  rclcpp::TimerBase::SharedPtr statusFlushTimer_;
 
   friend class ISmaccState;
   friend class SignalDetector;
